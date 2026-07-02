@@ -1,0 +1,43 @@
+[
+ {
+  "doctype": "Custom Field",
+  "name": "Employee-custom_salario_base_manual",
+  "dt": "Employee",
+  "fieldname": "custom_salario_base_manual",
+  "fieldtype": "Currency",
+  "label": "Salário Base (Manual)",
+  "insert_after": "ctc",
+  "description": "Override por funcionário do salário base. Vazio = herda o padrão/mínimo.",
+  "read_only": 0,
+  "no_copy": 0,
+  "translatable": 0
+ },
+ {
+  "doctype": "Custom Field",
+  "name": "Employee-custom_data_antiguidade_ferias",
+  "dt": "Employee",
+  "fieldname": "custom_data_antiguidade_ferias",
+  "fieldtype": "Date",
+  "label": "Data de Antiguidade (Férias)",
+  "insert_after": "date_of_joining",
+  "fetch_from": "date_of_joining",
+  "fetch_if_empty": 1,
+  "description": "Data-âncora da acumulação de férias. Por omissão = data de admissão.",
+  "read_only": 0,
+  "no_copy": 1,
+  "translatable": 0
+ },
+ {
+  "doctype": "Custom Field",
+  "name": "Employee-custom_ultima_acumulacao_ferias",
+  "dt": "Employee",
+  "fieldname": "custom_ultima_acumulacao_ferias",
+  "fieldtype": "Date",
+  "label": "Última Acumulação de Férias",
+  "insert_after": "custom_data_antiguidade_ferias",
+  "description": "Marcador de idempotência do scheduler de acumulação. Gerido pelo sistema.",
+  "read_only": 1,
+  "no_copy": 1,
+  "translatable": 0
+ }
+]

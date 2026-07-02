@@ -35,6 +35,12 @@ carries `funcionario` (Link → Employee) plus a read-only `funcionario_nome` fe
 Doctype names are **ASCII** (e.g. `Ausencia`, `Justificacao De Faltas`); user-facing
 labels and prose keep the accents (Ausência, Justificação).
 
+### Link filters
+
+Every Link → Employee field this app creates carries `link_filters` excluding terminated
+staff: `[["Employee","status","!=","Left"]]` (constant `EMPLOYEE_LINK_FILTERS` in
+`entre_hr/utils.py`).
+
 ### Configuration
 
 All configuration lives in the single doctype **`Entre HR Settings`** — nothing is

@@ -24,6 +24,20 @@ app_include_js = "/assets/entre_hr/js/entre_hr.js"
 
 fixtures = [
     {"dt": "Role", "filters": [["name", "in", ["Aprovador RH", "RH Manager"]]]},
+    {
+        "dt": "Custom Field",
+        "filters": [
+            [
+                "name",
+                "in",
+                [
+                    "Employee-custom_salario_base_manual",
+                    "Employee-custom_data_antiguidade_ferias",
+                    "Employee-custom_ultima_acumulacao_ferias",
+                ],
+            ]
+        ],
+    },
 ]
 
 # Document Events
