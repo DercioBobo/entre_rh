@@ -1,0 +1,266 @@
+{
+ "actions": [],
+ "creation": "2026-07-02 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "geral_section",
+  "salario_minimo_padrao",
+  "estrutura_salarial_padrao",
+  "payroll_payable_account",
+  "ferias_section",
+  "ferias_activo",
+  "leave_type_ferias",
+  "dias_maximos_ferias",
+  "folha_section",
+  "folha_activo",
+  "divisor_dias",
+  "faltas_column",
+  "metodo_calculo_faltas",
+  "valor_fixo_por_falta",
+  "componentes_section",
+  "componente_faltas",
+  "componente_proporcional",
+  "componentes_column",
+  "componente_retroativo",
+  "componente_emprestimo",
+  "inss_section",
+  "activo_inss",
+  "componente_inss",
+  "inss_taxa_trabalhador",
+  "irps_section",
+  "activo_irps",
+  "componente_irps",
+  "irps_tabela",
+  "decimo_terceiro_section",
+  "activo_13o_salario",
+  "componente_13o_salario"
+ ],
+ "fields": [
+  {
+   "fieldname": "geral_section",
+   "fieldtype": "Section Break",
+   "label": "Geral"
+  },
+  {
+   "fieldname": "salario_minimo_padrao",
+   "fieldtype": "Currency",
+   "label": "Salário Mínimo Padrão",
+   "description": "Piso legal do salário base. Vazio/0 = sem piso."
+  },
+  {
+   "fieldname": "estrutura_salarial_padrao",
+   "fieldtype": "Link",
+   "label": "Estrutura Salarial Padrão",
+   "options": "Salary Structure",
+   "description": "Estrutura usada nas novas atribuições salariais."
+  },
+  {
+   "fieldname": "payroll_payable_account",
+   "fieldtype": "Link",
+   "label": "Conta a Pagar (Folha)",
+   "options": "Account",
+   "description": "Definida em cada Salary Structure Assignment."
+  },
+  {
+   "fieldname": "ferias_section",
+   "fieldtype": "Section Break",
+   "label": "Férias"
+  },
+  {
+   "default": "0",
+   "fieldname": "ferias_activo",
+   "fieldtype": "Check",
+   "label": "Férias Activo"
+  },
+  {
+   "default": "Ferias",
+   "fieldname": "leave_type_ferias",
+   "fieldtype": "Link",
+   "label": "Tipo de Licença (Férias)",
+   "options": "Leave Type"
+  },
+  {
+   "default": "60",
+   "fieldname": "dias_maximos_ferias",
+   "fieldtype": "Int",
+   "label": "Dias Máximos de Férias",
+   "description": "Tecto de acumulação; o excesso expira no aniversário de admissão."
+  },
+  {
+   "fieldname": "folha_section",
+   "fieldtype": "Section Break",
+   "label": "Folha de Pagamento"
+  },
+  {
+   "default": "0",
+   "fieldname": "folha_activo",
+   "fieldtype": "Check",
+   "label": "Folha Activo"
+  },
+  {
+   "default": "Dias do Mês",
+   "fieldname": "divisor_dias",
+   "fieldtype": "Select",
+   "label": "Divisor de Dias",
+   "options": "Dias do Mês\nDias Úteis"
+  },
+  {
+   "fieldname": "faltas_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Proporcional ao Salário",
+   "fieldname": "metodo_calculo_faltas",
+   "fieldtype": "Select",
+   "label": "Método de Cálculo de Faltas",
+   "options": "Proporcional ao Salário\nValor Fixo por Falta"
+  },
+  {
+   "depends_on": "eval:doc.metodo_calculo_faltas == 'Valor Fixo por Falta'",
+   "fieldname": "valor_fixo_por_falta",
+   "fieldtype": "Currency",
+   "label": "Valor Fixo por Falta"
+  },
+  {
+   "fieldname": "componentes_section",
+   "fieldtype": "Section Break",
+   "label": "Componentes Salariais"
+  },
+  {
+   "default": "Faltas",
+   "fieldname": "componente_faltas",
+   "fieldtype": "Link",
+   "label": "Componente de Faltas",
+   "options": "Salary Component"
+  },
+  {
+   "default": "Proporcional",
+   "fieldname": "componente_proporcional",
+   "fieldtype": "Link",
+   "label": "Componente Proporcional",
+   "options": "Salary Component"
+  },
+  {
+   "fieldname": "componentes_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Retroativo",
+   "fieldname": "componente_retroativo",
+   "fieldtype": "Link",
+   "label": "Componente Retroativo",
+   "options": "Salary Component"
+  },
+  {
+   "default": "Emprestimo",
+   "fieldname": "componente_emprestimo",
+   "fieldtype": "Link",
+   "label": "Componente Empréstimo",
+   "options": "Salary Component"
+  },
+  {
+   "fieldname": "inss_section",
+   "fieldtype": "Section Break",
+   "label": "INSS"
+  },
+  {
+   "default": "0",
+   "fieldname": "activo_inss",
+   "fieldtype": "Check",
+   "label": "INSS Activo"
+  },
+  {
+   "default": "INSS",
+   "depends_on": "activo_inss",
+   "fieldname": "componente_inss",
+   "fieldtype": "Link",
+   "label": "Componente INSS",
+   "options": "Salary Component"
+  },
+  {
+   "depends_on": "activo_inss",
+   "fieldname": "inss_taxa_trabalhador",
+   "fieldtype": "Percent",
+   "label": "Taxa do Trabalhador (%)",
+   "description": "TBD — fórmula/taxa oficial a fornecer."
+  },
+  {
+   "fieldname": "irps_section",
+   "fieldtype": "Section Break",
+   "label": "IRPS"
+  },
+  {
+   "default": "0",
+   "fieldname": "activo_irps",
+   "fieldtype": "Check",
+   "label": "IRPS Activo"
+  },
+  {
+   "default": "IRPS",
+   "depends_on": "activo_irps",
+   "fieldname": "componente_irps",
+   "fieldtype": "Link",
+   "label": "Componente IRPS",
+   "options": "Salary Component"
+  },
+  {
+   "depends_on": "activo_irps",
+   "fieldname": "irps_tabela",
+   "fieldtype": "Table",
+   "label": "Tabela de Escalões IRPS",
+   "options": "Escalao IRPS",
+   "description": "TBD — escalões oficiais a fornecer."
+  },
+  {
+   "fieldname": "decimo_terceiro_section",
+   "fieldtype": "Section Break",
+   "label": "13º Salário"
+  },
+  {
+   "default": "0",
+   "fieldname": "activo_13o_salario",
+   "fieldtype": "Check",
+   "label": "13º Salário Activo"
+  },
+  {
+   "default": "13o Salario",
+   "depends_on": "activo_13o_salario",
+   "fieldname": "componente_13o_salario",
+   "fieldtype": "Link",
+   "label": "Componente 13º Salário",
+   "options": "Salary Component"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-07-02 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Entre HR",
+ "name": "Entre HR Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "RH Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

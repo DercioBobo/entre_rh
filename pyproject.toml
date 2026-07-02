@@ -1,0 +1,15 @@
+[project]
+name = "entre_hr"
+authors = [
+    { name = "Dércio Bobo", email = "derciobob@gmail.com" }
+]
+description = "Entre HR — HR + payroll app for Mozambique, built on Frappe / ERPNext / HRMS"
+requires-python = ">=3.10"
+readme = "README.md"
+dynamic = ["version"]
+
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.bench.dev-dependencies]
