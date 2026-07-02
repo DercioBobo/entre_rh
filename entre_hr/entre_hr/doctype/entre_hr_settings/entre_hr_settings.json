@@ -74,11 +74,11 @@
    "label": "Férias Activo"
   },
   {
-   "default": "Ferias",
    "fieldname": "leave_type_ferias",
    "fieldtype": "Link",
    "label": "Tipo de Licença (Férias)",
-   "options": "Leave Type"
+   "options": "Leave Type",
+   "description": "Sugerido: \"Ferias\"."
   },
   {
    "default": "60",
@@ -128,36 +128,36 @@
    "label": "Componentes Salariais"
   },
   {
-   "default": "Faltas",
    "fieldname": "componente_faltas",
    "fieldtype": "Link",
    "label": "Componente de Faltas",
-   "options": "Salary Component"
+   "options": "Salary Component",
+   "description": "Sugerido: \"Faltas\"."
   },
   {
-   "default": "Proporcional",
    "fieldname": "componente_proporcional",
    "fieldtype": "Link",
    "label": "Componente Proporcional",
-   "options": "Salary Component"
+   "options": "Salary Component",
+   "description": "Sugerido: \"Proporcional\"."
   },
   {
    "fieldname": "componentes_column",
    "fieldtype": "Column Break"
   },
   {
-   "default": "Retroativo",
    "fieldname": "componente_retroativo",
    "fieldtype": "Link",
    "label": "Componente Retroativo",
-   "options": "Salary Component"
+   "options": "Salary Component",
+   "description": "Sugerido: \"Retroativo\"."
   },
   {
-   "default": "Emprestimo",
    "fieldname": "componente_emprestimo",
    "fieldtype": "Link",
    "label": "Componente Empréstimo",
-   "options": "Salary Component"
+   "options": "Salary Component",
+   "description": "Sugerido: \"Emprestimo\"."
   },
   {
    "fieldname": "inss_section",
@@ -171,12 +171,12 @@
    "label": "INSS Activo"
   },
   {
-   "default": "INSS",
    "depends_on": "activo_inss",
    "fieldname": "componente_inss",
    "fieldtype": "Link",
    "label": "Componente INSS",
-   "options": "Salary Component"
+   "options": "Salary Component",
+   "description": "Sugerido: \"INSS\"."
   },
   {
    "depends_on": "activo_inss",
@@ -197,12 +197,12 @@
    "label": "IRPS Activo"
   },
   {
-   "default": "IRPS",
    "depends_on": "activo_irps",
    "fieldname": "componente_irps",
    "fieldtype": "Link",
    "label": "Componente IRPS",
-   "options": "Salary Component"
+   "options": "Salary Component",
+   "description": "Sugerido: \"IRPS\"."
   },
   {
    "depends_on": "activo_irps",
@@ -224,12 +224,12 @@
    "label": "13º Salário Activo"
   },
   {
-   "default": "13o Salario",
    "depends_on": "activo_13o_salario",
    "fieldname": "componente_13o_salario",
    "fieldtype": "Link",
    "label": "Componente 13º Salário",
-   "options": "Salary Component"
+   "options": "Salary Component",
+   "description": "Sugerido: \"13o Salario\"."
   }
  ],
  "index_web_pages_for_search": 1,
