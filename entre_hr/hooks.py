@@ -19,6 +19,10 @@ after_migrate = "entre_hr.install.after_migrate"
 app_include_css = "/assets/entre_hr/css/entre_hr.css"
 app_include_js = "/assets/entre_hr/js/entre_hr.js"
 
+doctype_js = {
+    "Employee": "public/js/employee.js",
+}
+
 # Fixtures
 # --------
 
