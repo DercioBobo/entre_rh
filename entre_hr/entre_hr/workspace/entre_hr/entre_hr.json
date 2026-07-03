@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\":\"hdr_entre_hr\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Entre HR</b></span>\",\"col\":12}},{\"id\":\"sc_employee\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Funcionário\",\"col\":3}},{\"id\":\"sc_slip\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Salary Slip\",\"col\":3}},{\"id\":\"sc_settings\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Entre HR Settings\",\"col\":3}},{\"id\":\"sp_1\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"card_func\",\"type\":\"card\",\"data\":{\"card_name\":\"Funcionários\",\"col\":4}},{\"id\":\"card_folha\",\"type\":\"card\",\"data\":{\"card_name\":\"Folha de Pagamento\",\"col\":4}},{\"id\":\"card_config\",\"type\":\"card\",\"data\":{\"card_name\":\"Configuração\",\"col\":4}}]",
+ "content": "[{\"id\":\"hdr_entre_hr\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Entre HR</b></span>\",\"col\":12}},{\"id\":\"sc_employee\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Funcionário\",\"col\":3}},{\"id\":\"sc_slip\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Salary Slip\",\"col\":3}},{\"id\":\"sc_settings\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Entre HR Settings\",\"col\":3}},{\"id\":\"sp_1\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"card_func\",\"type\":\"card\",\"data\":{\"card_name\":\"Funcionários\",\"col\":4}},{\"id\":\"card_folha\",\"type\":\"card\",\"data\":{\"card_name\":\"Folha de Pagamento\",\"col\":4}},{\"id\":\"card_mov\",\"type\":\"card\",\"data\":{\"card_name\":\"Movimentos Salariais\",\"col\":4}},{\"id\":\"card_faltas\",\"type\":\"card\",\"data\":{\"card_name\":\"Faltas\",\"col\":4}},{\"id\":\"card_ferias\",\"type\":\"card\",\"data\":{\"card_name\":\"Férias\",\"col\":4}},{\"id\":\"card_config\",\"type\":\"card\",\"data\":{\"card_name\":\"Configuração\",\"col\":4}}]",
  "creation": "2026-07-02 00:00:00.000000",
  "doctype": "Workspace",
  "for_user": "",
@@ -83,6 +83,123 @@
    "label": "Componente Salarial",
    "link_count": 0,
    "link_to": "Salary Component",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Movimentos Salariais",
+   "link_count": 4,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Outras Deduções",
+   "link_count": 0,
+   "link_to": "Outras Deducoes",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Outras Remunerações",
+   "link_count": 0,
+   "link_to": "Outras Remuneracoes",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Empréstimo",
+   "link_count": 0,
+   "link_to": "Emprestimo",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Reclamação de Salário",
+   "link_count": 0,
+   "link_to": "Reclamacao De Salario",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Faltas",
+   "link_count": 2,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Ausência",
+   "link_count": 0,
+   "link_to": "Ausencia",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Justificação de Faltas",
+   "link_count": 0,
+   "link_to": "Justificacao De Faltas",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Férias",
+   "link_count": 3,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Pedido de Licença",
+   "link_count": 0,
+   "link_to": "Leave Application",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Alocação de Licença",
+   "link_count": 0,
+   "link_to": "Leave Allocation",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Leave Ledger Entry",
+   "link_count": 0,
+   "link_to": "Leave Ledger Entry",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"

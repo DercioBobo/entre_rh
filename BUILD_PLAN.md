@@ -56,7 +56,10 @@ do not ship a Workflow/Workflow State fixture.
 > - a single doctype `Entre HR Settings` (see spec).
     > No business doctypes yet.
 
-**Spec — `Entre HR Settings` (Single doctype) fields:**
+**Spec — `Entre HR Settings` (Single doctype) fields** (⚠️ the "default X" notes below
+are *suggestions shown in the field description*, **never** actual Link-field defaults —
+`init_singles` saves the Single at install time and a Link default pointing at a
+not-yet-existing record makes the install fail with LinkValidationError):
 - `salario_minimo_padrao` (Currency) — legal minimum-wage floor; blank/0 = no floor.
 - `estrutura_salarial_padrao` (Link → Salary Structure) — the structure new assignments
   use.

@@ -1,0 +1,164 @@
+{
+ "actions": [],
+ "autoname": "EMP-.####",
+ "creation": "2026-07-02 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "funcionario",
+  "funcionario_nome",
+  "salario_base",
+  "column_break_1",
+  "valor_mensal",
+  "numero_de_meses",
+  "valor_total",
+  "section_periodo",
+  "data_de_inicio",
+  "data_de_fim",
+  "section_obs",
+  "observacoes",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "funcionario",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Funcionário",
+   "link_filters": "[[\"Employee\",\"status\",\"!=\",\"Left\"]]",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "funcionario.employee_name",
+   "fieldname": "funcionario_nome",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Nome do Funcionário",
+   "read_only": 1
+  },
+  {
+   "fieldname": "salario_base",
+   "fieldtype": "Currency",
+   "label": "Salário Base (SSA)",
+   "read_only": 1,
+   "description": "Base do último SSA submetido — referência para o limite da prestação."
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "valor_mensal",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Prestação Mensal",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "numero_de_meses",
+   "fieldtype": "Int",
+   "label": "Número de Meses",
+   "reqd": 1
+  },
+  {
+   "fieldname": "valor_total",
+   "fieldtype": "Currency",
+   "label": "Valor Total",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_periodo",
+   "fieldtype": "Section Break",
+   "label": "Período"
+  },
+  {
+   "fieldname": "data_de_inicio",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Data de Início",
+   "reqd": 1
+  },
+  {
+   "fieldname": "data_de_fim",
+   "fieldtype": "Date",
+   "label": "Data de Fim",
+   "read_only": 1,
+   "description": "Último dia do mês final."
+  },
+  {
+   "fieldname": "section_obs",
+   "fieldtype": "Section Break",
+   "label": "Observações"
+  },
+  {
+   "fieldname": "observacoes",
+   "fieldtype": "Small Text",
+   "label": "Observações"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Emendado De",
+   "no_copy": 1,
+   "options": "Emprestimo",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-07-02 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Entre HR",
+ "name": "Emprestimo",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "RH Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Aprovador RH",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "funcionario_nome"
+}

@@ -1,0 +1,189 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2026-07-02 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "funcionario",
+  "funcionario_nome",
+  "column_break_1",
+  "tipo_de_subsidios",
+  "valor_mensal",
+  "section_periodo",
+  "mes",
+  "ano",
+  "numero_de_meses",
+  "column_break_2",
+  "data_de_inicio",
+  "data_de_fim",
+  "section_obs",
+  "observacoes",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "default": "ORE-.YY.-.##",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Série",
+   "options": "ORE-.YY.-.##"
+  },
+  {
+   "fieldname": "funcionario",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Funcionário",
+   "link_filters": "[[\"Employee\",\"status\",\"!=\",\"Left\"]]",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "funcionario.employee_name",
+   "fieldname": "funcionario_nome",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Nome do Funcionário",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "tipo_de_subsidios",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Tipo de Subsídio (Componente Salarial)",
+   "link_filters": "[[\"Salary Component\",\"type\",\"=\",\"Earning\"]]",
+   "options": "Salary Component",
+   "reqd": 1
+  },
+  {
+   "fieldname": "valor_mensal",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Valor Mensal",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_periodo",
+   "fieldtype": "Section Break",
+   "label": "Período"
+  },
+  {
+   "fieldname": "mes",
+   "fieldtype": "Select",
+   "label": "Mês de Início",
+   "options": "Janeiro\nFevereiro\nMarço\nAbril\nMaio\nJunho\nJulho\nAgosto\nSetembro\nOutubro\nNovembro\nDezembro",
+   "reqd": 1
+  },
+  {
+   "fieldname": "ano",
+   "fieldtype": "Int",
+   "label": "Ano de Início",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "numero_de_meses",
+   "fieldtype": "Int",
+   "label": "Número de Meses",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "data_de_inicio",
+   "fieldtype": "Date",
+   "label": "Data de Início",
+   "read_only": 1
+  },
+  {
+   "fieldname": "data_de_fim",
+   "fieldtype": "Date",
+   "label": "Data de Fim",
+   "read_only": 1,
+   "description": "Último dia do mês final."
+  },
+  {
+   "fieldname": "section_obs",
+   "fieldtype": "Section Break",
+   "label": "Observações"
+  },
+  {
+   "fieldname": "observacoes",
+   "fieldtype": "Small Text",
+   "label": "Observações"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Emendado De",
+   "no_copy": 1,
+   "options": "Outras Remuneracoes",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-07-02 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Entre HR",
+ "name": "Outras Remuneracoes",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "RH Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Aprovador RH",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "funcionario_nome"
+}

@@ -9,7 +9,7 @@ import frappe
 from frappe import _
 from frappe.utils import cint, flt, getdate, today
 
-ROLES_GESTAO_SALARIO = {"RH Manager", "System Manager"}
+from entre_hr.utils import ROLES_GESTAO_RH
 
 
 def get_settings():
@@ -26,6 +26,18 @@ def get_latest_ssa(employee):
 		limit=1,
 	)
 	return rows[0] if rows else None
+
+
+def base_para_data(employee, data):
+	"""Base from the latest submitted SSA effective on `data` (0.0 when none)."""
+	rows = frappe.get_all(
+		"Salary Structure Assignment",
+		filters={"employee": employee, "docstatus": 1, "from_date": ["<=", data]},
+		fields=["base"],
+		order_by="from_date desc, creation desc",
+		limit=1,
+	)
+	return flt(rows[0].base) if rows else 0.0
 
 
 def resolver_salario_base(employee):
@@ -113,7 +125,7 @@ def definir_salario(employee, valor=None, usar_minimo=0, confirmar_reducao=0):
 	new value is lower and not yet confirmed, returns {requires_confirm, atual, novo} and
 	writes nothing.
 	"""
-	if not ROLES_GESTAO_SALARIO & set(frappe.get_roles()):
+	if not ROLES_GESTAO_RH & set(frappe.get_roles()):
 		frappe.throw(_("Sem permissão para definir salários."), frappe.PermissionError)
 
 	usar_minimo = cint(usar_minimo)

@@ -1,0 +1,149 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2026-07-02 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "funcionario",
+  "funcionario_nome",
+  "column_break_1",
+  "mes",
+  "ano",
+  "n_de_faltas",
+  "section_obs",
+  "observacoes",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "default": "AUS-.YY.-.##",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Série",
+   "options": "AUS-.YY.-.##"
+  },
+  {
+   "fieldname": "funcionario",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Funcionário",
+   "link_filters": "[[\"Employee\",\"status\",\"!=\",\"Left\"]]",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "funcionario.employee_name",
+   "fieldname": "funcionario_nome",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Nome do Funcionário",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "mes",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Mês",
+   "options": "Janeiro\nFevereiro\nMarço\nAbril\nMaio\nJunho\nJulho\nAgosto\nSetembro\nOutubro\nNovembro\nDezembro",
+   "reqd": 1
+  },
+  {
+   "fieldname": "ano",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Ano",
+   "reqd": 1
+  },
+  {
+   "fieldname": "n_de_faltas",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Nº de Faltas",
+   "reqd": 1,
+   "description": "Dias de ausência injustificada no mês."
+  },
+  {
+   "fieldname": "section_obs",
+   "fieldtype": "Section Break",
+   "label": "Observações"
+  },
+  {
+   "fieldname": "observacoes",
+   "fieldtype": "Small Text",
+   "label": "Observações"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Emendado De",
+   "no_copy": 1,
+   "options": "Ausencia",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-07-02 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Entre HR",
+ "name": "Ausencia",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "RH Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Aprovador RH",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "funcionario_nome"
+}

@@ -38,6 +38,9 @@ fixtures = [
                     "Employee-custom_salario_base_manual",
                     "Employee-custom_data_antiguidade_ferias",
                     "Employee-custom_ultima_acumulacao_ferias",
+                    "Salary Slip-custom_dias_de_trabalho",
+                    "Salary Slip-custom_dias_trabalhados",
+                    "Salary Detail-custom_origem_entre_hr",
                 ],
             ]
         ],
@@ -46,12 +49,22 @@ fixtures = [
 
 # Document Events
 # ---------------
-# (wired per phase — see BUILD_PLAN.md)
 
-# doc_events = {}
+doc_events = {
+    "Salary Slip": {
+        "before_insert": "entre_hr.payroll.salary_slip_hooks.before_insert",
+        "before_validate": "entre_hr.payroll.salary_slip_hooks.before_validate",
+        "before_submit": "entre_hr.payroll.salary_slip_hooks.before_submit",
+        "on_submit": "entre_hr.payroll.salary_slip_hooks.on_submit",
+        "on_cancel": "entre_hr.payroll.salary_slip_hooks.on_cancel",
+    },
+}
 
 # Scheduled Tasks
 # ---------------
-# (Phase 3: daily férias accrual)
 
-# scheduler_events = {}
+scheduler_events = {
+    "daily": [
+        "entre_hr.ferias.acumular_ferias_diario",
+    ],
+}
