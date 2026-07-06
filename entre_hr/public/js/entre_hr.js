@@ -4,7 +4,9 @@
 // start via eventos()) and Emprestimo (date start via eventos_data()).
 // The server (entre_hr.utils.derivar_periodo_pagamento / emprestimo.py) stays
 // authoritative on save; this mirror only keeps the derived fields and the payment
-// simulator live while the user is typing, instead of appearing after the first save.
+// plan live while the user is typing, instead of appearing after the first save.
+// The form handlers are registered at the bottom of this file (not in per-doctype
+// .js files) so nothing depends on this asset being loaded first.
 frappe.provide("entre_hr.periodo");
 
 entre_hr.periodo.MESES = [
@@ -216,3 +218,9 @@ entre_hr.periodo.render_plano = function (frm, linhas, resumo) {
 			</tfoot>
 		</table>`);
 };
+
+// --- Form registrations --------------------------------------------------------
+
+frappe.ui.form.on("Outras Deducoes", entre_hr.periodo.eventos());
+frappe.ui.form.on("Outras Remuneracoes", entre_hr.periodo.eventos());
+frappe.ui.form.on("Emprestimo", entre_hr.periodo.eventos_data());

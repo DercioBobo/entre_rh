@@ -186,6 +186,7 @@
    "description": "Limite dos adiantamentos pendentes por funcionário, em % do salário base. Sempre aplicado — vazio/0 usa os 50% padrão."
   },
   {
+   "collapsible": 1,
    "fieldname": "inss_section",
    "fieldtype": "Section Break",
    "label": "INSS"
@@ -213,6 +214,7 @@
    "description": "Quota do trabalhador sobre os ganhos tributáveis. 3% por lei; preenchida automaticamente na instalação, editável se a lei mudar."
   },
   {
+   "collapsible": 1,
    "fieldname": "irps_section",
    "fieldtype": "Section Break",
    "label": "IRPS"
@@ -241,6 +243,7 @@
    "description": "Tabela oficial de retenção mensal, por número de dependentes (4 = 4 ou mais). Preenchida automaticamente na instalação quando vazia; editável quando a lei mudar."
   },
   {
+   "collapsible": 1,
    "fieldname": "decimo_terceiro_section",
    "fieldtype": "Section Break",
    "label": "13º Salário"
