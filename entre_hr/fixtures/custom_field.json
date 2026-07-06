@@ -71,6 +71,19 @@
  },
  {
   "doctype": "Custom Field",
+  "name": "Employee-custom_idade",
+  "dt": "Employee",
+  "fieldname": "custom_idade",
+  "fieldtype": "Int",
+  "label": "Idade",
+  "insert_after": "date_of_birth",
+  "description": "Calculada automaticamente a partir da Data de Nascimento; actualizada diariamente.",
+  "read_only": 1,
+  "no_copy": 1,
+  "translatable": 0
+ },
+ {
+  "doctype": "Custom Field",
   "name": "Employee-custom_numero_de_dependentes",
   "dt": "Employee",
   "fieldname": "custom_numero_de_dependentes",

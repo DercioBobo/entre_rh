@@ -39,6 +39,7 @@ fixtures = [
                     "Employee-custom_data_antiguidade_ferias",
                     "Employee-custom_ultima_acumulacao_ferias",
                     "Employee-custom_numero_de_dependentes",
+                    "Employee-custom_idade",
                     "Salary Slip-custom_dias_de_trabalho",
                     "Salary Slip-custom_dias_trabalhados",
                     "Salary Detail-custom_origem_entre_hr",
@@ -52,6 +53,9 @@ fixtures = [
 # ---------------
 
 doc_events = {
+    "Employee": {
+        "validate": "entre_hr.utils.definir_idade",
+    },
     "Salary Slip": {
         "before_insert": "entre_hr.payroll.salary_slip_hooks.before_insert",
         "before_validate": "entre_hr.payroll.salary_slip_hooks.before_validate",
@@ -67,5 +71,6 @@ doc_events = {
 scheduler_events = {
     "daily": [
         "entre_hr.ferias.acumular_ferias_diario",
+        "entre_hr.utils.actualizar_idades",
     ],
 }

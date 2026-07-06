@@ -7,11 +7,21 @@ ROLES = ["Aprovador RH", "RH Manager"]
 def after_install():
 	ensure_roles()
 	seed_padroes()
+	backfill_idades()
 
 
 def after_migrate():
 	ensure_roles()
 	seed_padroes()
+	backfill_idades()
+
+
+def backfill_idades():
+	"""Fill Employee.custom_idade right away (the daily scheduler keeps it fresh
+	afterwards). No-op when every age is already current."""
+	from entre_hr.utils import actualizar_idades
+
+	actualizar_idades()
 
 
 def ensure_roles():

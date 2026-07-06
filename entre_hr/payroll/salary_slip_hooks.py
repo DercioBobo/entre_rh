@@ -17,7 +17,7 @@ from frappe.utils import cint, flt, get_last_day, getdate
 
 from entre_hr.payroll.statutory import calcular_13o, calcular_inss, calcular_irps
 from entre_hr.salario import base_para_data
-from entre_hr.utils import calcular_faltas, ensure_salary_component
+from entre_hr.utils import calcular_faltas, ensure_salary_component, prestacao_do_mes
 
 ORIGEM = "entre_hr"
 
@@ -147,16 +147,23 @@ def _covering(doctype, slip, extra_filters=None):
 	return filters
 
 
+PERIODO_FIELDS = ["valor_mensal", "valor_total", "numero_de_meses", "data_de_fim"]
+
+
 def _add_deducoes(slip):
-	"""Outras Deducoes: component read verbatim from `tipo`, summed per component."""
+	"""Outras Deducoes: component read verbatim from `tipo`, summed per component.
+	Each row contributes its installment for this month (the final month of a
+	multi-month schedule absorbs the rounding remainder)."""
 	rows = frappe.get_all(
 		"Outras Deducoes",
 		filters=_covering("Outras Deducoes", slip),
-		fields=["tipo", "valor_mensal"],
+		fields=["tipo"] + PERIODO_FIELDS,
 	)
 	por_componente = {}
 	for row in rows:
-		por_componente[row.tipo] = por_componente.get(row.tipo, 0.0) + flt(row.valor_mensal)
+		por_componente[row.tipo] = (
+			por_componente.get(row.tipo, 0.0) + prestacao_do_mes(row, slip.end_date)
+		)
 	for componente, amount in por_componente.items():
 		_append_managed(slip, "deductions", componente, amount)
 
@@ -166,12 +173,13 @@ def _add_remuneracoes(slip):
 	rows = frappe.get_all(
 		"Outras Remuneracoes",
 		filters=_covering("Outras Remuneracoes", slip),
-		fields=["tipo_de_subsidios", "valor_mensal"],
+		fields=["tipo_de_subsidios"] + PERIODO_FIELDS,
 	)
 	por_componente = {}
 	for row in rows:
 		por_componente[row.tipo_de_subsidios] = (
-			por_componente.get(row.tipo_de_subsidios, 0.0) + flt(row.valor_mensal)
+			por_componente.get(row.tipo_de_subsidios, 0.0)
+			+ prestacao_do_mes(row, slip.end_date)
 		)
 	for componente, amount in por_componente.items():
 		_append_managed(slip, "earnings", componente, amount)

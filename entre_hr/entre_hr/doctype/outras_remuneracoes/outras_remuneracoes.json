@@ -10,14 +10,19 @@
   "funcionario_nome",
   "column_break_1",
   "tipo_de_subsidios",
+  "base_de_calculo",
   "valor_mensal",
+  "valor_total",
   "section_periodo",
+  "tipo_de_pagamento",
   "mes",
   "ano",
   "numero_de_meses",
   "column_break_2",
   "data_de_inicio",
   "data_de_fim",
+  "section_simulacao",
+  "simulador_html",
   "section_obs",
   "observacoes",
   "amended_from"
@@ -64,16 +69,46 @@
    "reqd": 1
   },
   {
+   "default": "Valor Mensal",
+   "fieldname": "base_de_calculo",
+   "fieldtype": "Select",
+   "label": "Base de Cálculo",
+   "options": "Valor Mensal\nValor Total",
+   "reqd": 1,
+   "description": "Valor Mensal: introduz a prestação e o total é calculado. Valor Total: introduz o total a pagar e a prestação mensal é calculada."
+  },
+  {
    "fieldname": "valor_mensal",
    "fieldtype": "Currency",
    "in_list_view": 1,
    "label": "Valor Mensal",
-   "reqd": 1
+   "read_only_depends_on": "eval:doc.base_de_calculo === 'Valor Total'",
+   "reqd": 1,
+   "description": "Calculado automaticamente quando a base é Valor Total; a última prestação absorve o arredondamento."
+  },
+  {
+   "fieldname": "valor_total",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Valor Total",
+   "read_only_depends_on": "eval:doc.base_de_calculo !== 'Valor Total'",
+   "description": "Introduzido quando a base é Valor Total; caso contrário = valor mensal × número de meses."
   },
   {
    "fieldname": "section_periodo",
    "fieldtype": "Section Break",
    "label": "Período"
+  },
+  {
+   "default": "Único",
+   "fieldname": "tipo_de_pagamento",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Tipo de Pagamento",
+   "options": "Único\nPeriódico",
+   "reqd": 1,
+   "description": "Único = um só mês (fixo); Periódico = 2 ou mais meses."
   },
   {
    "fieldname": "mes",
@@ -90,10 +125,12 @@
   },
   {
    "default": "1",
+   "depends_on": "eval:doc.tipo_de_pagamento === 'Periódico'",
    "fieldname": "numero_de_meses",
    "fieldtype": "Int",
    "label": "Número de Meses",
-   "reqd": 1
+   "reqd": 1,
+   "description": "Mínimo 2 para pagamento periódico."
   },
   {
    "fieldname": "column_break_2",
@@ -111,6 +148,17 @@
    "label": "Data de Fim",
    "read_only": 1,
    "description": "Último dia do mês final."
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_simulacao",
+   "fieldtype": "Section Break",
+   "label": "Simulação de Pagamentos"
+  },
+  {
+   "fieldname": "simulador_html",
+   "fieldtype": "HTML",
+   "label": ""
   },
   {
    "fieldname": "section_obs",
