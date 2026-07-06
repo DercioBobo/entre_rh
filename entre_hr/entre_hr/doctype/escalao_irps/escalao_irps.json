@@ -5,12 +5,20 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "dependentes",
   "limite_inferior",
   "limite_superior",
   "taxa",
   "parcela_fixa"
  ],
  "fields": [
+  {
+   "fieldname": "dependentes",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Dependentes",
+   "description": "4 = 4 ou mais dependentes"
+  },
   {
    "fieldname": "limite_inferior",
    "fieldtype": "Currency",

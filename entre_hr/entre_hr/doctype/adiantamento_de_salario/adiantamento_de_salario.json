@@ -1,0 +1,172 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2026-07-06 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "funcionario",
+  "funcionario_nome",
+  "column_break_1",
+  "data_do_adiantamento",
+  "valor",
+  "section_limite",
+  "salario_base_referencia",
+  "limite_maximo",
+  "aplicado_em",
+  "section_observacoes",
+  "observacoes",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "default": "ADS-.YY.-.##",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Série",
+   "options": "ADS-.YY.-.##"
+  },
+  {
+   "fieldname": "funcionario",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Funcionário",
+   "link_filters": "[[\"Employee\",\"status\",\"!=\",\"Left\"]]",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "funcionario.employee_name",
+   "fieldname": "funcionario_nome",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Nome do Funcionário",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "data_do_adiantamento",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Data do Adiantamento",
+   "reqd": 1,
+   "description": "Data em que o valor foi/será entregue ao funcionário."
+  },
+  {
+   "fieldname": "valor",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Valor",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_limite",
+   "fieldtype": "Section Break",
+   "label": "Limite"
+  },
+  {
+   "fieldname": "salario_base_referencia",
+   "fieldtype": "Currency",
+   "label": "Salário Base de Referência",
+   "read_only": 1,
+   "description": "Base do funcionário na data do adiantamento (da última atribuição salarial)."
+  },
+  {
+   "fieldname": "limite_maximo",
+   "fieldtype": "Currency",
+   "label": "Limite Máximo",
+   "read_only": 1,
+   "description": "Percentagem máxima (Entre HR Settings) × salário base, descontando adiantamentos ainda não deduzidos."
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "aplicado_em",
+   "fieldtype": "Link",
+   "label": "Aplicado Em (Recibo)",
+   "no_copy": 1,
+   "options": "Salary Slip",
+   "read_only": 1,
+   "description": "Recibo onde este adiantamento foi deduzido. Gerido pelo sistema."
+  },
+  {
+   "fieldname": "section_observacoes",
+   "fieldtype": "Section Break",
+   "label": "Observações"
+  },
+  {
+   "fieldname": "observacoes",
+   "fieldtype": "Small Text",
+   "label": "Observações"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Emendado De",
+   "no_copy": 1,
+   "options": "Adiantamento De Salario",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-07-06 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Entre HR",
+ "name": "Adiantamento De Salario",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "RH Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Aprovador RH",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "funcionario_nome"
+}

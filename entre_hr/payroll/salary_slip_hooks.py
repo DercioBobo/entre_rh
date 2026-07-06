@@ -73,6 +73,7 @@ def _assemble(slip):
 	_add_remuneracoes(slip)
 	_add_emprestimos(slip, settings)
 	_add_reclamacoes(slip, settings)
+	_add_adiantamentos(slip, settings)
 
 	# 5. Statutory — after all earnings are in, so the taxable base is complete.
 	_add_estatutarios(slip, settings, base)
@@ -206,13 +207,59 @@ def _add_reclamacoes(slip, settings):
 	_append_managed(slip, "earnings", settings.componente_retroativo, total)
 
 
-def _add_estatutarios(slip, settings, base):
-	"""INSS, IRPS (on the post-INSS base) and 13º Salário — BUILD_PLAN Phase 7.
+def _adiantamentos_pendentes(employee, ate):
+	"""Submitted, not-yet-deducted advances given up to `ate` (the slip's end date, so
+	an advance given in August never lands on July's slip processed later)."""
+	return frappe.get_all(
+		"Adiantamento De Salario",
+		filters={
+			"funcionario": employee,
+			"docstatus": 1,
+			"aplicado_em": ["is", "not set"],
+			"data_do_adiantamento": ["<=", ate],
+		},
+		fields=["name", "valor"],
+	)
 
-	Each is gated by its Settings flag; components are auto-created with the right type
-	on first use. The formulas live in entre_hr.payroll.statutory (placeholders until
-	the official rules are supplied)."""
-	base_tributavel = sum(flt(e.amount) for e in slip.get("earnings") or [])
+
+def _add_adiantamentos(slip, settings):
+	"""Adiantamento De Salario: early payment of net salary. Full gross and taxes stay
+	untouched (an advance is not income); the amount comes back as a deduction so the
+	payday net excludes what was already handed over."""
+	rows = _adiantamentos_pendentes(slip.employee, slip.end_date)
+	total = sum(flt(r.valor) for r in rows)
+	_append_managed(slip, "deductions", settings.componente_adiantamento, total)
+
+
+def _earnings_tributaveis(slip):
+	"""Total of the earning rows whose Salary Component has 'Is Tax Applicable'
+	checked (ERPNext-native flag, default on). Looked up on the component — not the
+	child-row fetch — because rows appended during this same assembly cycle have no
+	fetched values yet."""
+	total = 0.0
+	for row in slip.get("earnings") or []:
+		if not row.salary_component:
+			continue
+		if cint(
+			frappe.get_cached_value("Salary Component", row.salary_component, "is_tax_applicable")
+		):
+			total += flt(row.amount)
+	return total
+
+
+def _add_estatutarios(slip, settings, base):
+	"""INSS, IRPS and 13º Salário — BUILD_PLAN Phase 7.
+
+	Each is gated by its Settings flag; components are auto-created with the right
+	type on first use. The 13º earning is appended first so it is part of the taxable
+	base; INSS is then a percent of the taxable earnings and IRPS is computed on the
+	post-INSS taxable base. Formulas live in entre_hr.payroll.statutory."""
+	if cint(settings.activo_13o_salario):
+		componente = ensure_salary_component(settings.componente_13o_salario, "Earning")
+		decimo_terceiro = calcular_13o(base, slip, settings)
+		_append_managed(slip, "earnings", componente, decimo_terceiro)
+
+	base_tributavel = _earnings_tributaveis(slip)
 
 	inss = 0.0
 	if cint(settings.activo_inss):
@@ -222,17 +269,16 @@ def _add_estatutarios(slip, settings, base):
 
 	if cint(settings.activo_irps):
 		componente = ensure_salary_component(settings.componente_irps, "Deduction")
-		irps = calcular_irps(base_tributavel - inss, settings)
+		dependentes = cint(
+			frappe.db.get_value("Employee", slip.employee, "custom_numero_de_dependentes")
+		)
+		irps = calcular_irps(base_tributavel - inss, dependentes, settings)
 		_append_managed(slip, "deductions", componente, irps)
-
-	if cint(settings.activo_13o_salario):
-		componente = ensure_salary_component(settings.componente_13o_salario, "Earning")
-		decimo_terceiro = calcular_13o(base, slip, settings)
-		_append_managed(slip, "earnings", componente, decimo_terceiro)
 
 
 def _marcar_reclamacoes(slip):
-	"""On slip submit: mark the pending claims it paid, so they are never paid twice."""
+	"""On slip submit: mark the pending claims/advances it settled, so they are never
+	applied twice."""
 	settings = _settings()
 	if not cint(settings.folha_activo):
 		return
@@ -240,15 +286,18 @@ def _marcar_reclamacoes(slip):
 		frappe.db.set_value(
 			"Reclamacao De Salario", row.name, "aplicado_em", slip.name, update_modified=False
 		)
+	for row in _adiantamentos_pendentes(slip.employee, slip.end_date):
+		frappe.db.set_value(
+			"Adiantamento De Salario", row.name, "aplicado_em", slip.name, update_modified=False
+		)
 
 
 def _desmarcar_reclamacoes(slip):
-	"""On slip cancel: release its claims so the next slip picks them up again."""
-	for name in frappe.get_all(
-		"Reclamacao De Salario",
-		filters={"aplicado_em": slip.name},
-		pluck="name",
-	):
-		frappe.db.set_value(
-			"Reclamacao De Salario", name, "aplicado_em", None, update_modified=False
-		)
+	"""On slip cancel: release its claims/advances so the next slip picks them up again."""
+	for doctype in ("Reclamacao De Salario", "Adiantamento De Salario"):
+		for name in frappe.get_all(
+			doctype,
+			filters={"aplicado_em": slip.name},
+			pluck="name",
+		):
+			frappe.db.set_value(doctype, name, "aplicado_em", None, update_modified=False)

@@ -38,6 +38,7 @@ fixtures = [
                     "Employee-custom_salario_base_manual",
                     "Employee-custom_data_antiguidade_ferias",
                     "Employee-custom_ultima_acumulacao_ferias",
+                    "Employee-custom_numero_de_dependentes",
                     "Salary Slip-custom_dias_de_trabalho",
                     "Salary Slip-custom_dias_trabalhados",
                     "Salary Detail-custom_origem_entre_hr",

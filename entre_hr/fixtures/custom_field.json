@@ -71,6 +71,20 @@
  },
  {
   "doctype": "Custom Field",
+  "name": "Employee-custom_numero_de_dependentes",
+  "dt": "Employee",
+  "fieldname": "custom_numero_de_dependentes",
+  "fieldtype": "Int",
+  "label": "Número de Dependentes (IRPS)",
+  "insert_after": "custom_salario_base_manual",
+  "description": "Dependentes para efeitos de retenção de IRPS. 4 = 4 ou mais.",
+  "non_negative": 1,
+  "read_only": 0,
+  "no_copy": 0,
+  "translatable": 0
+ },
+ {
+  "doctype": "Custom Field",
   "name": "Employee-custom_ultima_acumulacao_ferias",
   "dt": "Employee",
   "fieldname": "custom_ultima_acumulacao_ferias",

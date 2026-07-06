@@ -11,6 +11,11 @@ EMPLOYEE_LINK_FILTERS = '[["Employee","status","!=","Left"]]'
 # Roles allowed to manage salaries / run HR admin actions.
 ROLES_GESTAO_RH = {"RH Manager", "System Manager"}
 
+# Salary-advance cap (% of base salary). The cap is ALWAYS enforced: when
+# Settings.adiantamento_max_percentagem is blank/0 this default applies — there is
+# deliberately no "no limit" configuration.
+ADIANTAMENTO_PERCENTAGEM_PADRAO = 50.0
+
 
 def ensure_salary_component(nome, tipo):
 	"""Return the component name, auto-creating it with the given type ('Earning' /

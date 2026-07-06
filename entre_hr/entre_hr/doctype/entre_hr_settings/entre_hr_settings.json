@@ -24,6 +24,8 @@
   "componentes_column",
   "componente_retroativo",
   "componente_emprestimo",
+  "componente_adiantamento",
+  "adiantamento_max_percentagem",
   "inss_section",
   "activo_inss",
   "componente_inss",
@@ -34,7 +36,8 @@
   "irps_tabela",
   "decimo_terceiro_section",
   "activo_13o_salario",
-  "componente_13o_salario"
+  "componente_13o_salario",
+  "mes_13o_salario"
  ],
  "fields": [
   {
@@ -160,15 +163,30 @@
    "description": "Sugerido: \"Emprestimo\"."
   },
   {
+   "fieldname": "componente_adiantamento",
+   "fieldtype": "Link",
+   "label": "Componente Adiantamento",
+   "options": "Salary Component",
+   "description": "Sugerido: \"Adiantamento de Salario\". Preenchido automaticamente na instalação."
+  },
+  {
+   "default": "50",
+   "fieldname": "adiantamento_max_percentagem",
+   "fieldtype": "Percent",
+   "label": "Adiantamento Máximo (% do Salário Base)",
+   "description": "Limite dos adiantamentos pendentes por funcionário, em % do salário base. Sempre aplicado — vazio/0 usa os 50% padrão."
+  },
+  {
    "fieldname": "inss_section",
    "fieldtype": "Section Break",
    "label": "INSS"
   },
   {
-   "default": "0",
+   "default": "1",
    "fieldname": "activo_inss",
    "fieldtype": "Check",
-   "label": "INSS Activo"
+   "label": "INSS Activo",
+   "description": "Contribuição obrigatória por lei — activada automaticamente na instalação."
   },
   {
    "depends_on": "activo_inss",
@@ -183,7 +201,7 @@
    "fieldname": "inss_taxa_trabalhador",
    "fieldtype": "Percent",
    "label": "Taxa do Trabalhador (%)",
-   "description": "TBD — fórmula/taxa oficial a fornecer."
+   "description": "Quota do trabalhador sobre os ganhos tributáveis. 3% por lei; preenchida automaticamente na instalação, editável se a lei mudar."
   },
   {
    "fieldname": "irps_section",
@@ -191,10 +209,11 @@
    "label": "IRPS"
   },
   {
-   "default": "0",
+   "default": "1",
    "fieldname": "activo_irps",
    "fieldtype": "Check",
-   "label": "IRPS Activo"
+   "label": "IRPS Activo",
+   "description": "Retenção obrigatória por lei — activada automaticamente na instalação."
   },
   {
    "depends_on": "activo_irps",
@@ -210,7 +229,7 @@
    "fieldtype": "Table",
    "label": "Tabela de Escalões IRPS",
    "options": "Escalao IRPS",
-   "description": "TBD — escalões oficiais a fornecer."
+   "description": "Tabela oficial de retenção mensal, por número de dependentes (4 = 4 ou mais). Preenchida automaticamente na instalação quando vazia; editável quando a lei mudar."
   },
   {
    "fieldname": "decimo_terceiro_section",
@@ -218,10 +237,11 @@
    "label": "13º Salário"
   },
   {
-   "default": "0",
+   "default": "1",
    "fieldname": "activo_13o_salario",
    "fieldtype": "Check",
-   "label": "13º Salário Activo"
+   "label": "13º Salário Activo",
+   "description": "Activado automaticamente na instalação."
   },
   {
    "depends_on": "activo_13o_salario",
@@ -230,6 +250,15 @@
    "label": "Componente 13º Salário",
    "options": "Salary Component",
    "description": "Sugerido: \"13o Salario\"."
+  },
+  {
+   "default": "Dezembro",
+   "depends_on": "activo_13o_salario",
+   "fieldname": "mes_13o_salario",
+   "fieldtype": "Select",
+   "label": "Mês de Pagamento do 13º",
+   "options": "Janeiro\nFevereiro\nMarço\nAbril\nMaio\nJunho\nJulho\nAgosto\nSetembro\nOutubro\nNovembro\nDezembro",
+   "description": "O 13º (um salário base completo) entra na folha deste mês. Preenchido automaticamente na instalação com Dezembro."
   }
  ],
  "index_web_pages_for_search": 1,
