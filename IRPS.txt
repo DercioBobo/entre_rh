@@ -1,0 +1,48 @@
+0 Dependentes
+0 if taxable_earnings < 20250 else
+0.10 * (taxable_earnings - 20250) if taxable_earnings <= 20749.99 else
+0.10 * (taxable_earnings - 20750) + 50 if taxable_earnings <= 20999.99 else
+0.10 * (taxable_earnings - 21000) + 75 if taxable_earnings <= 21249.99 else
+0.10 * (taxable_earnings - 21250) + 100 if taxable_earnings <= 21749.99 else
+0.10 * (taxable_earnings - 21750) + 150 if taxable_earnings <= 22249.99 else
+0.15 * (taxable_earnings - 22250) + 200 if taxable_earnings <= 32749.99 else
+0.20 * (taxable_earnings - 32750) + 1775 if taxable_earnings <= 60749.99 else
+0.25 * (taxable_earnings - 60750) + 7375 if taxable_earnings <= 144749.99 else
+0.32 * (taxable_earnings - 144750) + 28375
+
+1 Dependente
+0 if taxable_earnings < 20750 else
+0.10 * (taxable_earnings - 20750) if taxable_earnings <= 20999.99 else
+0.10 * (taxable_earnings - 21000) + 25 if taxable_earnings <= 21249.99 else
+0.10 * (taxable_earnings - 21250) + 50 if taxable_earnings <= 21749.99 else
+0.10 * (taxable_earnings - 21750) + 100 if taxable_earnings <= 22249.99 else
+0.15 * (taxable_earnings - 22250) + 150 if taxable_earnings <= 32749.99 else
+0.20 * (taxable_earnings - 32750) + 1725 if taxable_earnings <= 60749.99 else
+0.25 * (taxable_earnings - 60750) + 7325 if taxable_earnings <= 144749.99 else
+0.32 * (taxable_earnings - 144750) + 28325
+2 dependentes
+0 if taxable_earnings < 21000 else
+0.10 * (taxable_earnings - 21000) if taxable_earnings <= 21249.99 else
+0.10 * (taxable_earnings - 21250) + 25 if taxable_earnings <= 21749.99 else
+0.10 * (taxable_earnings - 21750) + 75 if taxable_earnings <= 22249.99 else
+0.15 * (taxable_earnings - 22250) + 125 if taxable_earnings <= 32749.99 else
+0.20 * (taxable_earnings - 32750) + 1700 if taxable_earnings <= 60749.99 else
+0.25 * (taxable_earnings - 60750) + 7300 if taxable_earnings <= 144749.99 else
+0.32 * (taxable_earnings - 144750) + 28300
+3 dependentes
+0 if taxable_earnings < 21250 else
+0.10 * (taxable_earnings - 21250) if taxable_earnings <= 21749.99 else
+0.10 * (taxable_earnings - 21750) + 50 if taxable_earnings <= 22249.99 else
+0.15 * (taxable_earnings - 22250) + 100 if taxable_earnings <= 32749.99 else
+0.20 * (taxable_earnings - 32750) + 1675 if taxable_earnings <= 60749.99 else
+0.25 * (taxable_earnings - 60750) + 7275 if taxable_earnings <= 144749.99 else
+0.32 * (taxable_earnings - 144750) + 28275
+
+4/+ dependentes
+0 if taxable_earnings < 21750 else
+0.10 * (taxable_earnings - 21750) if taxable_earnings <= 22249.99 else
+0.15 * (taxable_earnings - 22250) + 50 if taxable_earnings <= 32749.99 else
+0.20 * (taxable_earnings - 32750) + 1625 if taxable_earnings <= 60749.99 else
+0.25 * (taxable_earnings - 60750) + 7225 if taxable_earnings <= 144749.99 else
+0.32 * (taxable_earnings - 144750) + 28225
+

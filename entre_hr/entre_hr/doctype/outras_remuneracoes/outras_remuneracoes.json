@@ -69,7 +69,7 @@
    "reqd": 1
   },
   {
-   "default": "Valor Mensal",
+   "default": "Valor Total",
    "fieldname": "base_de_calculo",
    "fieldtype": "Select",
    "label": "Base de Cálculo",

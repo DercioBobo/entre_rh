@@ -2,6 +2,7 @@
  "actions": [],
  "autoname": "EMP-.####",
  "creation": "2026-07-02 00:00:00.000000",
+ "default_print_format": "Termo de Emprestimo",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
@@ -9,14 +10,23 @@
   "funcionario_nome",
   "salario_base",
   "column_break_1",
+  "base_de_calculo",
   "valor_mensal",
   "numero_de_meses",
   "valor_total",
   "section_periodo",
+  "data_de_entrega",
   "data_de_inicio",
   "data_de_fim",
+  "section_pagamentos",
+  "valor_pago",
+  "saldo_devedor",
+  "pagamentos",
+  "section_simulacao",
+  "simulador_html",
   "section_obs",
   "observacoes",
+  "comprovativo_assinado",
   "amended_from"
  ],
  "fields": [
@@ -50,11 +60,22 @@
    "fieldtype": "Column Break"
   },
   {
+   "default": "Valor Total",
+   "fieldname": "base_de_calculo",
+   "fieldtype": "Select",
+   "label": "Base de Cálculo",
+   "options": "Valor Mensal\nValor Total",
+   "reqd": 1,
+   "description": "Valor Total: introduz o montante emprestado e a prestação mensal é calculada. Valor Mensal: introduz a prestação e o total é calculado."
+  },
+  {
    "fieldname": "valor_mensal",
    "fieldtype": "Currency",
    "in_list_view": 1,
    "label": "Prestação Mensal",
-   "reqd": 1
+   "read_only_depends_on": "eval:doc.base_de_calculo === 'Valor Total'",
+   "reqd": 1,
+   "description": "Calculada automaticamente quando a base é Valor Total; a última prestação absorve o arredondamento."
   },
   {
    "default": "1",
@@ -66,8 +87,10 @@
   {
    "fieldname": "valor_total",
    "fieldtype": "Currency",
+   "in_list_view": 1,
    "label": "Valor Total",
-   "read_only": 1
+   "read_only_depends_on": "eval:doc.base_de_calculo !== 'Valor Total'",
+   "description": "Montante emprestado quando a base é Valor Total; caso contrário = prestação × número de meses."
   },
   {
    "fieldname": "section_periodo",
@@ -75,18 +98,71 @@
    "label": "Período"
   },
   {
+   "default": "Today",
+   "fieldname": "data_de_entrega",
+   "fieldtype": "Date",
+   "label": "Data de Entrega",
+   "description": "Data em que o valor foi entregue ao funcionário — consta do Termo de Empréstimo."
+  },
+  {
    "fieldname": "data_de_inicio",
    "fieldtype": "Date",
    "in_list_view": 1,
    "label": "Data de Início",
-   "reqd": 1
+   "reqd": 1,
+   "description": "Mês em que começa o desconto no salário (pode ser posterior à entrega)."
   },
   {
    "fieldname": "data_de_fim",
    "fieldtype": "Date",
    "label": "Data de Fim",
    "read_only": 1,
-   "description": "Último dia do mês final."
+   "description": "Último dia do mês final. No modo Saldo Devedor é uma previsão — a cobrança continua até o saldo chegar a zero."
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_pagamentos",
+   "fieldtype": "Section Break",
+   "label": "Pagamentos"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "valor_pago",
+   "fieldtype": "Currency",
+   "label": "Valor Pago",
+   "no_copy": 1,
+   "read_only": 1,
+   "description": "Total já deduzido em recibos submetidos. Gerido pelo sistema (modo Saldo Devedor)."
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "saldo_devedor",
+   "fieldtype": "Currency",
+   "label": "Saldo Devedor",
+   "no_copy": 1,
+   "read_only": 1,
+   "description": "Valor total − valor pago. Gerido pelo sistema."
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "pagamentos",
+   "fieldtype": "Table",
+   "label": "Histórico de Pagamentos",
+   "no_copy": 1,
+   "options": "Pagamento De Emprestimo",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_simulacao",
+   "fieldtype": "Section Break",
+   "label": "Simulação de Pagamentos"
+  },
+  {
+   "fieldname": "simulador_html",
+   "fieldtype": "HTML",
+   "label": ""
   },
   {
    "fieldname": "section_obs",
@@ -97,6 +173,14 @@
    "fieldname": "observacoes",
    "fieldtype": "Small Text",
    "label": "Observações"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "comprovativo_assinado",
+   "fieldtype": "Attach",
+   "label": "Comprovativo Assinado",
+   "no_copy": 1,
+   "description": "Digitalização do Termo de Empréstimo assinado pelo funcionário. Pode ser anexado após a submissão."
   },
   {
    "fieldname": "amended_from",

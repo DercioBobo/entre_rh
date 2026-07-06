@@ -37,10 +37,12 @@ def before_submit(doc, method=None):
 
 def on_submit(doc, method=None):
 	_marcar_reclamacoes(doc)
+	_marcar_emprestimos(doc)
 
 
 def on_cancel(doc, method=None):
 	_desmarcar_reclamacoes(doc)
+	_desmarcar_emprestimos(doc)
 
 
 def _settings():
@@ -185,14 +187,49 @@ def _add_remuneracoes(slip):
 		_append_managed(slip, "earnings", componente, amount)
 
 
-def _add_emprestimos(slip, settings):
-	"""Emprestimo: sum of active, date-covering monthly installments."""
+def _modo_emprestimo(settings):
+	return settings.get("metodo_emprestimo") or "Saldo Devedor"
+
+
+def _emprestimos_com_saldo(slip):
+	"""Saldo Devedor mode: started, submitted loans with money still owed, each with
+	this month's installment = min(prestação, saldo). Skipped months therefore extend
+	the schedule instead of losing installments, and the last payment is naturally
+	the exact remainder."""
 	rows = frappe.get_all(
 		"Emprestimo",
-		filters=_covering("Emprestimo", slip),
-		fields=["valor_mensal"],
+		filters={
+			"funcionario": slip.employee,
+			"docstatus": 1,
+			"data_de_inicio": ["<=", slip.end_date],
+		},
+		fields=["name", "valor_mensal", "valor_total", "valor_pago"],
 	)
-	total = sum(flt(r.valor_mensal) for r in rows)
+	prestacoes = []
+	for row in rows:
+		saldo = flt(row.valor_total) - flt(row.valor_pago)
+		if saldo <= 0:
+			continue
+		prestacoes.append((row.name, min(flt(row.valor_mensal), saldo)))
+	return prestacoes
+
+
+def _add_emprestimos(slip, settings):
+	"""Emprestimo: one deduction line summing this month's installments.
+
+	Method per Settings.metodo_emprestimo — "Saldo Devedor" (default): deduct from
+	every processed slip until the outstanding balance reaches zero (payments are
+	recorded on slip submit, see _marcar_emprestimos); "Calendário": deduct only on
+	the months of the loan's period, with the final month absorbing rounding."""
+	if _modo_emprestimo(settings) == "Calendário":
+		rows = frappe.get_all(
+			"Emprestimo",
+			filters=_covering("Emprestimo", slip),
+			fields=PERIODO_FIELDS,
+		)
+		total = sum(prestacao_do_mes(r, slip.end_date) for r in rows)
+	else:
+		total = sum(valor for _nome, valor in _emprestimos_com_saldo(slip))
 	_append_managed(slip, "deductions", settings.componente_emprestimo, total)
 
 
@@ -309,3 +346,63 @@ def _desmarcar_reclamacoes(slip):
 			pluck="name",
 		):
 			frappe.db.set_value(doctype, name, "aplicado_em", None, update_modified=False)
+
+
+def _marcar_emprestimos(slip):
+	"""On slip submit (Saldo Devedor mode): record each loan's installment in its
+	payment history and refresh valor_pago / saldo_devedor, so the next slip deducts
+	from the updated balance and never double-charges."""
+	settings = _settings()
+	if not cint(settings.folha_activo) or _modo_emprestimo(settings) == "Calendário":
+		return
+	for nome, valor in _emprestimos_com_saldo(slip):
+		if frappe.db.exists(
+			"Pagamento De Emprestimo", {"parent": nome, "recibo": slip.name}
+		):
+			continue
+		frappe.get_doc(
+			{
+				"doctype": "Pagamento De Emprestimo",
+				"parenttype": "Emprestimo",
+				"parent": nome,
+				"parentfield": "pagamentos",
+				"idx": cint(frappe.db.count("Pagamento De Emprestimo", {"parent": nome})) + 1,
+				"docstatus": 1,
+				"recibo": slip.name,
+				"data": slip.end_date,
+				"valor": valor,
+			}
+		).insert(ignore_permissions=True)
+		_recalcular_pagamentos_emprestimo(nome)
+
+
+def _desmarcar_emprestimos(slip):
+	"""On slip cancel: remove the payments that slip recorded and restore the
+	balances, so reprocessing the month charges the installment again."""
+	rows = frappe.get_all(
+		"Pagamento De Emprestimo",
+		filters={"recibo": slip.name},
+		fields=["name", "parent"],
+	)
+	for row in rows:
+		frappe.db.delete("Pagamento De Emprestimo", {"name": row.name})
+	for parent in {row.parent for row in rows}:
+		_recalcular_pagamentos_emprestimo(parent)
+
+
+def _recalcular_pagamentos_emprestimo(nome):
+	pago = sum(
+		flt(valor)
+		for valor in frappe.get_all(
+			"Pagamento De Emprestimo",
+			filters={"parenttype": "Emprestimo", "parent": nome},
+			pluck="valor",
+		)
+	)
+	total = flt(frappe.db.get_value("Emprestimo", nome, "valor_total"))
+	frappe.db.set_value(
+		"Emprestimo",
+		nome,
+		{"valor_pago": pago, "saldo_devedor": total - pago},
+		update_modified=False,
+	)

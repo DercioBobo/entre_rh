@@ -24,6 +24,7 @@
   "componentes_column",
   "componente_retroativo",
   "componente_emprestimo",
+  "metodo_emprestimo",
   "componente_adiantamento",
   "adiantamento_max_percentagem",
   "inss_section",
@@ -161,6 +162,14 @@
    "label": "Componente Empréstimo",
    "options": "Salary Component",
    "description": "Sugerido: \"Emprestimo\"."
+  },
+  {
+   "default": "Saldo Devedor",
+   "fieldname": "metodo_emprestimo",
+   "fieldtype": "Select",
+   "label": "Método de Cobrança de Empréstimos",
+   "options": "Saldo Devedor\nCalendário",
+   "description": "Saldo Devedor: cada recibo submetido deduz a prestação até liquidar o total, mesmo que meses sejam saltados. Calendário: deduz apenas nos meses do período do empréstimo."
   },
   {
    "fieldname": "componente_adiantamento",

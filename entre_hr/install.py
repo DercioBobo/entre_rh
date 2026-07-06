@@ -62,6 +62,10 @@ def seed_padroes():
 			settings.set(campo, ensure_salary_component(nome, tipo))
 			mudou = True
 
+	if not settings.get("metodo_emprestimo"):
+		settings.metodo_emprestimo = "Saldo Devedor"
+		mudou = True
+
 	if not settings.get("componente_adiantamento"):
 		from entre_hr.utils import ADIANTAMENTO_PERCENTAGEM_PADRAO
 
