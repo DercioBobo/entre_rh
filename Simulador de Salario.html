@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador de Salario - Mocambique</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f5f3;--surface:#fff;--surface-2:#f9f9f8;--surface-3:#f2f2f0;
+  --border:rgba(0,0,0,0.08);--border-med:rgba(0,0,0,0.13);
+  --text:#111110;--text-2:#6f6f6b;--text-3:#a0a09b;
+  --teal:#0a8a65;--teal-bg:#e6f5f0;--teal-light:#d0ede5;
+  --red:#c0392b;--red-bg:#fdf0ee;
+  --orange:#c05621;--orange-bg:#fef3ed;
+  --blue:#1a6faf;--blue-bg:#eaf3fb;
+  --purple:#6d45b0;--purple-bg:#f0ebfa;
+  --r:10px;--rl:14px;
+  --mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;padding:2rem 1rem 4rem}
+.page{max-width:1100px;margin:0 auto}
+
+/* HEADER */
+.header{margin-bottom:1.5rem;padding-bottom:1.25rem;border-bottom:.5px solid var(--border-med)}
+.header-top{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.hicon{width:40px;height:40px;background:var(--teal-bg);border-radius:var(--r);display:flex;align-items:center;justify-content:center;color:var(--teal);font-size:20px}
+.header h1{font-size:20px;font-weight:600;letter-spacing:-.3px}
+.header p{font-size:13px;color:var(--text-2);margin-left:52px}
+
+/* MAIN TABS */
+.main-tabs{display:flex;gap:6px;margin-bottom:1.5rem;background:var(--surface);border:.5px solid var(--border);border-radius:var(--rl);padding:5px}
+.mtab{flex:1;height:38px;border-radius:9px;border:none;background:transparent;color:var(--text-2);font-size:13px;font-weight:500;font-family:var(--sans);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .18s}
+.mtab:hover{background:var(--surface-2);color:var(--text)}
+.mtab.active{background:var(--teal-bg);color:var(--teal)}
+.msec{display:none}.msec.active{display:block}
+
+/* CARDS */
+.card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--rl);padding:1.25rem;margin-bottom:1rem}
+.card-title{font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem}
+
+/* FIELDS */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:560px){.fg,.fg3{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:12px;font-weight:500;color:var(--text-2)}
+.field input,.field select{height:38px;border-radius:var(--r);border:.5px solid var(--border-med);background:var(--surface-2);color:var(--text);font-size:14px;font-family:var(--sans);padding:0 11px;outline:none;transition:border-color .15s,box-shadow .15s;-webkit-appearance:none}
+.field input:focus,.field select:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(10,138,101,.1);background:#fff}
+.mono-input{font-family:var(--mono)!important;font-size:15px!important}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236f6f6b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px;cursor:pointer}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px;border-radius:var(--r);border:none;font-size:13px;font-weight:500;font-family:var(--sans);cursor:pointer;transition:all .15s}
+.btn-primary{background:var(--teal);color:#fff}.btn-primary:hover{background:#088057}
+.btn-ghost{background:transparent;color:var(--text-2);border:.5px solid var(--border-med)}.btn-ghost:hover{background:var(--surface-2);color:var(--text)}
+.btn-danger{background:transparent;color:var(--red);border:.5px solid rgba(192,57,43,.2)}.btn-danger:hover{background:var(--red-bg)}
+.btn-add{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:var(--r);border:.5px dashed var(--border-med);background:transparent;color:var(--text-2);font-size:13px;font-family:var(--sans);cursor:pointer;margin-top:4px;transition:all .15s}
+.btn-add:hover{background:var(--teal-bg);border-color:var(--teal);color:var(--teal)}
+.btn-sm{height:28px;padding:0 10px;font-size:12px}
+
+/* BONUS ROWS */
+.bonus-row{display:grid;grid-template-columns:1fr 130px 32px;gap:8px;align-items:center;margin-bottom:8px}
+.bonus-row input{height:34px;border-radius:var(--r);border:.5px solid var(--border-med);background:var(--surface-2);color:var(--text);font-size:13px;font-family:var(--sans);padding:0 10px;outline:none;transition:border-color .15s;width:100%}
+.bonus-row input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(10,138,101,.1);background:#fff}
+.btn-remove{width:32px;height:32px;border-radius:var(--r);border:.5px solid var(--border-med);background:transparent;color:var(--text-3);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.btn-remove:hover{background:var(--red-bg);border-color:rgba(192,57,43,.25);color:var(--red)}
+
+/* METRICS */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1rem}
+@media(max-width:560px){.metrics{grid-template-columns:repeat(2,1fr)}}
+.metric{background:var(--surface);border:.5px solid var(--border);border-radius:var(--rl);padding:14px 16px}
+.metric-label{font-size:11px;font-weight:500;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.metric-value{font-family:var(--mono);font-size:17px;font-weight:500;color:var(--text)}
+.m-liq{background:var(--teal-bg);border-color:var(--teal-light)}.m-liq .metric-label{color:var(--teal)}.m-liq .metric-value{color:var(--teal)}
+.m-inss{background:var(--orange-bg);border-color:rgba(192,86,33,.15)}.m-inss .metric-label{color:var(--orange)}.m-inss .metric-value{color:var(--orange)}
+.m-irps{background:var(--red-bg);border-color:rgba(192,57,43,.15)}.m-irps .metric-label{color:var(--red)}.m-irps .metric-value{color:var(--red)}
+.m-bruto{background:var(--purple-bg);border-color:rgba(109,69,176,.15)}.m-bruto .metric-label{color:var(--purple)}.m-bruto .metric-value{color:var(--purple)}
+
+/* BAR */
+.bar-outer{height:8px;border-radius:99px;background:var(--border);overflow:hidden;display:flex;margin-bottom:10px}
+.bar-seg{height:100%;transition:width .35s cubic-bezier(.4,0,.2,1);min-width:0}
+.bar-legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:1rem}
+.leg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-2);font-weight:500}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* BREAKDOWN TABLE */
+.breakdown{width:100%;border-collapse:collapse}
+.breakdown tr td{padding:9px 0;font-size:13px;border-bottom:.5px solid var(--border);vertical-align:middle}
+.breakdown tr:last-child td{border-bottom:none}
+.breakdown td:last-child{text-align:right;font-family:var(--mono);font-size:13px;font-weight:500}
+.row-deduct td:last-child{color:var(--red)}.row-deduct td:first-child{color:var(--text-2)}
+.row-orange td:last-child{color:var(--orange)}.row-orange td:first-child{color:var(--text-2)}
+.row-sub td{font-size:12px;color:var(--text-3);padding:5px 0}.row-sub td:last-child{font-size:12px;color:var(--text-3)}
+.row-bonus td:last-child{color:var(--blue)}.row-bonus td:first-child{color:var(--text-2)}
+.row-total td{font-size:15px;font-weight:600;padding-top:14px;border-top:1.5px solid var(--border-med);border-bottom:none}
+.row-total td:last-child{color:var(--teal);font-size:16px}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;margin-left:6px;letter-spacing:.03em;vertical-align:middle}
+.badge-blue{background:var(--blue-bg);color:var(--blue)}
+.badge-gray{background:var(--border);color:var(--text-2)}
+.badge-teal{background:var(--teal-bg);color:var(--teal)}
+
+/* TABS INSIDE */
+.sub-tabs{display:flex;gap:5px;margin-bottom:1rem}
+.stab{height:32px;padding:0 14px;border-radius:8px;border:none;background:transparent;color:var(--text-2);font-size:12px;font-weight:500;font-family:var(--sans);cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s}
+.stab:hover{background:var(--surface-3)}
+.stab.active{background:var(--teal-bg);color:var(--teal)}
+
+/* INVERSOR */
+.inv-hero{display:flex;align-items:baseline;gap:8px;margin-bottom:4px}
+.inv-hero-label{font-size:13px;color:var(--text-2)}
+.inv-hero-value{font-family:var(--mono);font-size:28px;font-weight:600;color:var(--purple);letter-spacing:-.5px}
+.inv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:1rem}
+@media(max-width:500px){.inv-grid{grid-template-columns:repeat(2,1fr)}}
+.inv-item{display:flex;flex-direction:column;gap:4px}
+.inv-item-label{font-size:11px;font-weight:500;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em}
+.inv-item-value{font-family:var(--mono);font-size:15px;font-weight:500}
+.v-purple{color:var(--purple)}.v-orange{color:var(--orange)}.v-red{color:var(--red)}.v-teal{color:var(--teal);font-size:17px!important}
+.inv-note{font-size:12px;color:var(--text-3);margin-top:8px}
+
+/* FOLHA */
+.folha-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:1rem}
+.folha-toolbar .spacer{flex:1}
+
+/* FOLHA TABLE */
+.folha-wrap{overflow-x:auto;border-radius:var(--rl);border:.5px solid var(--border)}
+.folha-table{width:100%;border-collapse:collapse;font-size:13px;min-width:900px}
+.folha-table thead tr{background:var(--surface-2)}
+.folha-table th{padding:10px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--border-med);white-space:nowrap}
+.folha-table th:last-child,.folha-table td:last-child{text-align:center;width:60px}
+.folha-table td{padding:10px 12px;border-bottom:.5px solid var(--border);vertical-align:middle}
+.folha-table tr:last-child td{border-bottom:none}
+.folha-table tr:hover td{background:var(--surface-2)}
+.folha-table .mono{font-family:var(--mono);font-size:12px}
+.folha-table .v-red{color:var(--red)}.folha-table .v-orange{color:var(--orange)}.folha-table .v-teal{color:var(--teal);font-weight:600}
+.folha-table td input{height:30px;border-radius:7px;border:.5px solid var(--border-med);background:transparent;color:var(--text);font-size:12px;font-family:var(--mono);padding:0 8px;outline:none;width:100%;min-width:80px;transition:border-color .15s}
+.folha-table td input:focus{border-color:var(--teal);background:#fff}
+.folha-table td select{height:30px;border-radius:7px;border:.5px solid var(--border-med);background:transparent;color:var(--text);font-size:12px;font-family:var(--sans);padding:0 24px 0 8px;outline:none;cursor:pointer;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%236f6f6b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center}
+.folha-table td select:focus{border-color:var(--teal)}
+
+/* TOTAIS */
+.totais-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:1rem}
+@media(max-width:700px){.totais-grid{grid-template-columns:repeat(2,1fr)}}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--text-3)}
+.empty-state i{font-size:40px;margin-bottom:12px;display:block;opacity:.4}
+.empty-state p{font-size:14px}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(4px)}
+.modal{background:var(--surface);border-radius:var(--rl);padding:1.5rem;width:100%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,.15);max-height:90vh;overflow-y:auto}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.modal-header h3{font-size:16px;font-weight:600}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:1.25rem;padding-top:1rem;border-top:.5px solid var(--border)}
+.hidden{display:none!important}
+
+/* PRINT */
+@media print{
+  body{background:#fff;padding:0}
+  .no-print{display:none!important}
+  .card{box-shadow:none;border:1px solid #ddd}
+  .folha-table{min-width:unset}
+}
+
+.footer{margin-top:1.5rem;text-align:center;font-size:11px;color:var(--text-3)}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="header no-print">
+  <div class="header-top">
+    <div class="hicon"><i class="ti ti-calculator"></i></div>
+    <h1>Simulador de Salario</h1>
+  </div>
+  <p>Calculo de INSS e IRPS — Mocambique</p>
+</div>
+
+<div class="main-tabs no-print">
+  <button class="mtab active" onclick="switchMain('individual')"><i class="ti ti-user"></i> Simulador Individual</button>
+  <button class="mtab" onclick="switchMain('folha')"><i class="ti ti-table"></i> Folha de Salarios</button>
+</div>
+
+<!-- ===== INDIVIDUAL ===== -->
+<div id="sec-individual" class="msec active">
+  <div class="sub-tabs no-print">
+    <button class="stab active" onclick="switchSub('directo')"><i class="ti ti-arrow-right"></i> Bruto para Liquido</button>
+    <button class="stab" onclick="switchSub('inverso')"><i class="ti ti-arrow-left"></i> Liquido para Bruto</button>
+  </div>
+
+  <!-- DIRECTO -->
+  <div id="sub-directo" class="msec active">
+    <div class="card">
+      <p class="card-title">Dados do funcionario</p>
+      <div class="fg">
+        <div class="field"><label>Salario base (MZN)</label><input type="number" id="s-base" value="25000" min="0" step="100" class="mono-input" oninput="calcular()"></div>
+        <div class="field"><label>Dependentes</label>
+          <select id="s-dep" onchange="calcular()">
+            <option value="0">0 dependentes</option><option value="1">1 dependente</option>
+            <option value="2">2 dependentes</option><option value="3">3 dependentes</option>
+            <option value="4">4 ou mais</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <p class="card-title">Bonus <span class="badge badge-blue">sem desconto</span></p>
+      <div id="bonus-list"></div>
+      <button class="btn-add" onclick="addBonus()"><i class="ti ti-plus"></i> Adicionar bonus</button>
+    </div>
+    <div class="metrics">
+      <div class="metric"><div class="metric-label">Salario bruto</div><div class="metric-value" id="m-bruto">-</div></div>
+      <div class="metric m-inss"><div class="metric-label">INSS (3%)</div><div class="metric-value" id="m-inss">-</div></div>
+      <div class="metric m-irps"><div class="metric-label">IRPS</div><div class="metric-value" id="m-irps">-</div></div>
+      <div class="metric m-liq"><div class="metric-label">Liquido total</div><div class="metric-value" id="m-liq">-</div></div>
+    </div>
+    <div class="bar-outer"><div class="bar-seg" id="bar-liq" style="background:#0a8a65"></div><div class="bar-seg" id="bar-inss" style="background:#c05621"></div><div class="bar-seg" id="bar-irps" style="background:#c0392b"></div><div class="bar-seg" id="bar-bon" style="background:#1a6faf"></div></div>
+    <div class="bar-legend">
+      <div class="leg"><div class="leg-dot" style="background:#0a8a65"></div>Liquido</div>
+      <div class="leg"><div class="leg-dot" style="background:#c05621"></div>INSS</div>
+      <div class="leg"><div class="leg-dot" style="background:#c0392b"></div>IRPS</div>
+      <div class="leg"><div class="leg-dot" style="background:#1a6faf"></div>Bonus</div>
+    </div>
+    <div class="card">
+      <p class="card-title">Demonstracao detalhada</p>
+      <table class="breakdown"><tbody id="breakdown-body"></tbody></table>
+    </div>
+  </div>
+
+  <!-- INVERSO -->
+  <div id="sub-inverso" class="msec">
+    <div class="card">
+      <p class="card-title">Definir salario liquido pretendido</p>
+      <div class="fg">
+        <div class="field"><label>Salario liquido desejado (MZN)</label><input type="number" id="inv-liq" value="20000" min="0" step="100" class="mono-input" oninput="calcularInverso()"></div>
+        <div class="field"><label>Dependentes</label>
+          <select id="inv-dep" onchange="calcularInverso()">
+            <option value="0">0 dependentes</option><option value="1">1 dependente</option>
+            <option value="2">2 dependentes</option><option value="3">3 dependentes</option>
+            <option value="4">4 ou mais</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="inv-hero"><span class="inv-hero-label">Salario base necessario:</span><span class="inv-hero-value" id="inv-bruto-val">-</span><span class="inv-hero-label">MZN</span></div>
+      <div class="inv-grid">
+        <div class="inv-item"><span class="inv-item-label">INSS (3%)</span><span class="inv-item-value v-orange" id="inv-inss-val">-</span></div>
+        <div class="inv-item"><span class="inv-item-label">IRPS</span><span class="inv-item-value v-red" id="inv-irps-val">-</span></div>
+        <div class="inv-item"><span class="inv-item-label">Total descontos</span><span class="inv-item-value v-red" id="inv-desc-val">-</span></div>
+        <div class="inv-item"><span class="inv-item-label">Taxa efectiva</span><span class="inv-item-value v-purple" id="inv-taxa-val">-</span></div>
+        <div class="inv-item"><span class="inv-item-label">Banda IRPS</span><span class="inv-item-value v-purple" id="inv-band-val">-</span></div>
+        <div class="inv-item"><span class="inv-item-label">Liquido confirmado</span><span class="inv-item-value v-teal" id="inv-conf-val">-</span></div>
+      </div>
+      <p class="inv-note" id="inv-note"></p>
+    </div>
+    <div class="card">
+      <p class="card-title">Demonstracao detalhada</p>
+      <table class="breakdown"><tbody id="inv-breakdown"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FOLHA ===== -->
+<div id="sec-folha" class="msec">
+  <div class="folha-toolbar no-print">
+    <button class="btn btn-primary" onclick="abrirModalFuncionario()"><i class="ti ti-user-plus"></i> Adicionar funcionario</button>
+    <button class="btn btn-ghost" onclick="document.getElementById('csv-input').click()"><i class="ti ti-upload"></i> Importar CSV</button>
+    <input type="file" id="csv-input" accept=".csv" class="hidden" onchange="importarCSV(event)">
+    <button class="btn btn-ghost" onclick="baixarTemplate()"><i class="ti ti-download"></i> Template CSV</button>
+    <div class="spacer"></div>
+    <button class="btn btn-ghost" onclick="exportarCSV()"><i class="ti ti-file-spreadsheet"></i> Exportar CSV</button>
+    <button class="btn btn-ghost" onclick="window.print()"><i class="ti ti-printer"></i> Imprimir</button>
+    <button class="btn btn-danger btn-sm" onclick="limparFolha()"><i class="ti ti-trash"></i> Limpar</button>
+  </div>
+
+  <!-- PRINT HEADER -->
+  <div style="display:none" class="print-only" id="print-header">
+    <h2 style="font-size:18px;font-weight:600;margin-bottom:4px">Folha de Salarios</h2>
+    <p style="font-size:13px;color:#666;margin-bottom:1.5rem" id="print-date"></p>
+  </div>
+
+  <div class="folha-wrap">
+    <table class="folha-table" id="folha-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nome</th>
+          <th>Dep.</th>
+          <th>Salario Base</th>
+          <th>Bonus</th>
+          <th>Bruto</th>
+          <th>INSS Func. (3%)</th>
+          <th>IRPS</th>
+          <th>Total Desc.</th>
+          <th>Liquido</th>
+          <th>INSS Emp. (4%)</th>
+          <th class="no-print"></th>
+        </tr>
+      </thead>
+      <tbody id="folha-tbody"></tbody>
+    </table>
+  </div>
+
+  <div id="folha-empty" class="empty-state">
+    <i class="ti ti-users"></i>
+    <p>Nenhum funcionario adicionado.<br>Adiciona manualmente ou importa um CSV.</p>
+  </div>
+
+  <div class="totais-grid" id="totais-grid" style="display:none">
+    <div class="metric"><div class="metric-label">Funcionarios</div><div class="metric-value" id="t-count">0</div></div>
+    <div class="metric m-bruto"><div class="metric-label">Massa salarial</div><div class="metric-value" id="t-bruto">-</div></div>
+    <div class="metric m-inss"><div class="metric-label">INSS func. (3%)</div><div class="metric-value" id="t-inss">-</div></div>
+    <div class="metric m-irps"><div class="metric-label">IRPS total</div><div class="metric-value" id="t-irps">-</div></div>
+    <div class="metric m-liq"><div class="metric-label">Liquido total</div><div class="metric-value" id="t-liq">-</div></div>
+    <div class="metric m-bruto"><div class="metric-label">INSS emp. (4%)</div><div class="metric-value" id="t-inss4">-</div></div>
+  </div>
+</div>
+
+</div><!-- /page -->
+
+<!-- MODAL FUNCIONARIO -->
+<div class="modal-overlay hidden" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-title">Adicionar funcionario</h3>
+      <button class="btn-remove" onclick="fecharModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="fg" style="margin-bottom:12px">
+      <div class="field"><label>Nome completo</label><input type="text" id="f-nome" placeholder="Ex: Ana Machava"></div>
+      <div class="field"><label>Dependentes</label>
+        <select id="f-dep">
+          <option value="0">0 dependentes</option><option value="1">1 dependente</option>
+          <option value="2">2 dependentes</option><option value="3">3 dependentes</option>
+          <option value="4">4 ou mais</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg" style="margin-bottom:12px">
+      <div class="field"><label>Salario base (MZN)</label><input type="number" id="f-base" value="0" min="0" step="100" class="mono-input" oninput="previewModal()"></div>
+      <div class="field" style="justify-content:flex-end;padding-top:17px">
+        <span style="font-size:12px;color:var(--text-2)">Liquido estimado: <strong id="f-preview" style="color:var(--teal)">-</strong></span>
+      </div>
+    </div>
+    <div style="margin-bottom:8px;font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em">Bonus <span class="badge badge-blue">sem desconto</span></div>
+    <div id="f-bonus-list"></div>
+    <button class="btn-add" onclick="addFBonus()"><i class="ti ti-plus"></i> Adicionar bonus</button>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarFuncionario()"><i class="ti ti-check"></i> Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="footer no-print">Tabelas INSS e IRPS — Mocambique &nbsp;|&nbsp; Apenas para efeitos de simulacao</div>
+
+<style>
+@media print {
+  .print-only{display:block!important}
+  #print-header{display:block!important}
+  .folha-table td input,.folha-table td select{border:none;background:transparent;padding:0}
+}
+</style>
+
+<script>
+// ============================================================
+// CORE CALC
+// ============================================================
+function calcINSS(b){ return b*0.03; }
+
+function calcIRPS(t,dep){
+  dep=parseInt(dep);
+  if(dep===0){
+    if(t<20250) return 0;
+    if(t<=20749.99) return 0.10*(t-20250);
+    if(t<=20999.99) return 0.10*(t-20750)+50;
+    if(t<=21249.99) return 0.10*(t-21000)+75;
+    if(t<=21749.99) return 0.10*(t-21250)+100;
+    if(t<=22249.99) return 0.10*(t-21750)+150;
+    if(t<=32749.99) return 0.15*(t-22250)+200;
+    if(t<=60749.99) return 0.20*(t-32750)+1775;
+    if(t<=144749.99) return 0.25*(t-60750)+7375;
+    return 0.32*(t-144750)+28375;
+  } else if(dep===1){
+    if(t<20750) return 0;
+    if(t<=20999.99) return 0.10*(t-20750);
+    if(t<=21249.99) return 0.10*(t-21000)+25;
+    if(t<=21749.99) return 0.10*(t-21250)+50;
+    if(t<=22249.99) return 0.10*(t-21750)+100;
+    if(t<=32749.99) return 0.15*(t-22250)+150;
+    if(t<=60749.99) return 0.20*(t-32750)+1725;
+    if(t<=144749.99) return 0.25*(t-60750)+7325;
+    return 0.32*(t-144750)+28325;
+  } else if(dep===2){
+    if(t<21000) return 0;
+    if(t<=21249.99) return 0.10*(t-21000);
+    if(t<=21749.99) return 0.10*(t-21250)+25;
+    if(t<=22249.99) return 0.10*(t-21750)+75;
+    if(t<=32749.99) return 0.15*(t-22250)+125;
+    if(t<=60749.99) return 0.20*(t-32750)+1700;
+    if(t<=144749.99) return 0.25*(t-60750)+7300;
+    return 0.32*(t-144750)+28300;
+  } else if(dep===3){
+    if(t<21250) return 0;
+    if(t<=21749.99) return 0.10*(t-21250);
+    if(t<=22249.99) return 0.10*(t-21750)+50;
+    if(t<=32749.99) return 0.15*(t-22250)+100;
+    if(t<=60749.99) return 0.20*(t-32750)+1675;
+    if(t<=144749.99) return 0.25*(t-60750)+7275;
+    return 0.32*(t-144750)+28275;
+  } else {
+    if(t<21750) return 0;
+    if(t<=22249.99) return 0.10*(t-21750);
+    if(t<=32749.99) return 0.15*(t-22250)+50;
+    if(t<=60749.99) return 0.20*(t-32750)+1625;
+    if(t<=144749.99) return 0.25*(t-60750)+7225;
+    return 0.32*(t-144750)+28225;
+  }
+}
+
+function getBand(t,dep){
+  dep=parseInt(dep);
+  const lims=[20250,20750,21000,21250,21750];
+  if(t<lims[Math.min(dep,4)]) return '0% - isento';
+  if(t<=22249.99) return '10%';
+  if(t<=32749.99) return '15%';
+  if(t<=60749.99) return '20%';
+  if(t<=144749.99) return '25%';
+  return '32%';
+}
+
+function calcSalario(base, dep, bonusList){
+  const bonusTotal = bonusList.reduce((s,b)=>s+(parseFloat(b.valor)||0),0);
+  const inss = calcINSS(base);
+  const irps = calcIRPS(base, dep);
+  const liquido = base - inss - irps + bonusTotal;
+  const bruto = base + bonusTotal;
+  return {bruto, inss, irps, liquido, bonusTotal, base};
+}
+
+function liquidoFromBruto(bruto,dep){ return bruto - calcINSS(bruto) - calcIRPS(bruto,dep); }
+
+function inverterSalario(liq,dep){
+  let lo=liq, hi=liq*3;
+  while(liquidoFromBruto(hi,dep)<liq) hi*=2;
+  for(let i=0;i<100;i++){
+    const mid=(lo+hi)/2, l=liquidoFromBruto(mid,dep);
+    if(Math.abs(l-liq)<0.001) return mid;
+    if(l<liq) lo=mid; else hi=mid;
+  }
+  return (lo+hi)/2;
+}
+
+function fmt(n){ return n.toLocaleString('pt-MZ',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+// ============================================================
+// TABS
+// ============================================================
+function switchMain(tab){
+  ['individual','folha'].forEach(t=>{
+    document.getElementById('sec-'+t).classList.toggle('active',t===tab);
+  });
+  document.querySelectorAll('.mtab').forEach((el,i)=>{
+    el.classList.toggle('active',(i===0&&tab==='individual')||(i===1&&tab==='folha'));
+  });
+}
+
+function switchSub(tab){
+  ['directo','inverso'].forEach(t=>{
+    document.getElementById('sub-'+t).classList.toggle('active',t===tab);
+  });
+  document.querySelectorAll('.stab').forEach((el,i)=>{
+    el.classList.toggle('active',(i===0&&tab==='directo')||(i===1&&tab==='inverso'));
+  });
+}
+
+// ============================================================
+// SIMULADOR INDIVIDUAL
+// ============================================================
+let bonusList=[];
+
+function calcular(){
+  const base=parseFloat(document.getElementById('s-base').value)||0;
+  const dep=document.getElementById('s-dep').value;
+  const r=calcSalario(base,dep,bonusList);
+  document.getElementById('m-bruto').textContent=fmt(r.bruto);
+  document.getElementById('m-inss').textContent=fmt(r.inss);
+  document.getElementById('m-irps').textContent=fmt(r.irps);
+  document.getElementById('m-liq').textContent=fmt(r.liquido);
+  const tot=r.bruto||1;
+  document.getElementById('bar-liq').style.width=Math.max(0,(r.liquido-r.bonusTotal)/tot*100)+'%';
+  document.getElementById('bar-inss').style.width=(r.inss/tot*100)+'%';
+  document.getElementById('bar-irps').style.width=(r.irps/tot*100)+'%';
+  document.getElementById('bar-bon').style.width=(r.bonusTotal/tot*100)+'%';
+  const band=getBand(base,dep);
+  let rows=`
+    <tr><td>Salario base</td><td>${fmt(base)} MZN</td></tr>
+    <tr class="row-orange"><td>(-) INSS <span class="badge badge-gray">3%</span></td><td>- ${fmt(r.inss)} MZN</td></tr>
+    <tr class="row-deduct"><td>(-) IRPS <span class="badge badge-gray">${band}</span></td><td>- ${fmt(r.irps)} MZN</td></tr>
+    <tr class="row-sub"><td>= Liquido do salario base</td><td>${fmt(base-r.inss-r.irps)} MZN</td></tr>
+  `;
+  bonusList.forEach(b=>{ const v=parseFloat(b.valor)||0; if(v>0) rows+=`<tr class="row-bonus"><td>(+) ${b.label||'Bonus'} <span class="badge badge-blue">sem desconto</span></td><td>+ ${fmt(v)} MZN</td></tr>`; });
+  rows+=`<tr class="row-total"><td>Salario liquido total</td><td>${fmt(r.liquido)} MZN</td></tr>`;
+  document.getElementById('breakdown-body').innerHTML=rows;
+}
+
+function renderBonusList(){
+  document.getElementById('bonus-list').innerHTML=bonusList.map(b=>`
+    <div class="bonus-row">
+      <input type="text" placeholder="Descricao" value="${b.label}" oninput="updateBonus(${b.id},'label',this.value)">
+      <input type="number" placeholder="Valor MZN" value="${b.valor}" min="0" step="100" oninput="updateBonus(${b.id},'valor',this.value)">
+      <button class="btn-remove" onclick="removeBonus(${b.id})"><i class="ti ti-x"></i></button>
+    </div>`).join('');
+  calcular();
+}
+
+function addBonus(){ bonusList.push({id:Date.now(),label:'',valor:0}); renderBonusList(); }
+function removeBonus(id){ bonusList=bonusList.filter(b=>b.id!==id); renderBonusList(); }
+function updateBonus(id,f,v){ const b=bonusList.find(b=>b.id===id); if(b){ b[f]=f==='valor'?(parseFloat(v)||0):v; } calcular(); }
+
+function calcularInverso(){
+  const liq=parseFloat(document.getElementById('inv-liq').value)||0;
+  const dep=document.getElementById('inv-dep').value;
+  if(liq<=0) return;
+  const bruto=inverterSalario(liq,dep);
+  const inss=calcINSS(bruto);
+  const irps=calcIRPS(bruto,dep);
+  const liqReal=bruto-inss-irps;
+  const desc=inss+irps;
+  const taxa=desc/bruto*100;
+  const band=getBand(bruto,dep);
+  document.getElementById('inv-bruto-val').textContent=fmt(bruto);
+  document.getElementById('inv-inss-val').textContent=fmt(inss)+' MZN';
+  document.getElementById('inv-irps-val').textContent=fmt(irps)+' MZN';
+  document.getElementById('inv-desc-val').textContent=fmt(desc)+' MZN';
+  document.getElementById('inv-taxa-val').textContent=taxa.toFixed(1)+'%';
+  document.getElementById('inv-band-val').textContent=band;
+  document.getElementById('inv-conf-val').textContent=fmt(liqReal)+' MZN';
+  document.getElementById('inv-note').textContent=Math.abs(liqReal-liq)<0.02?'Calculo exacto':'Diferenca: '+fmt(Math.abs(liqReal-liq))+' MZN';
+  document.getElementById('inv-breakdown').innerHTML=`
+    <tr class="row-sub"><td>Salario base necessario</td><td>${fmt(bruto)} MZN</td></tr>
+    <tr class="row-orange"><td>(-) INSS <span class="badge badge-gray">3%</span></td><td>- ${fmt(inss)} MZN</td></tr>
+    <tr class="row-deduct"><td>(-) IRPS <span class="badge badge-gray">${band}</span></td><td>- ${fmt(irps)} MZN</td></tr>
+    <tr class="row-total"><td>= Salario liquido</td><td>${fmt(liqReal)} MZN</td></tr>`;
+}
+
+// ============================================================
+// FOLHA DE SALARIOS
+// ============================================================
+let funcionarios=[];
+let editingId=null;
+let fBonusList=[];
+
+function renderFolha(){
+  const tbody=document.getElementById('folha-tbody');
+  const empty=document.getElementById('folha-empty');
+  const totaisGrid=document.getElementById('totais-grid');
+
+  if(funcionarios.length===0){
+    tbody.innerHTML='';
+    empty.style.display='block';
+    totaisGrid.style.display='none';
+    return;
+  }
+  empty.style.display='none';
+  totaisGrid.style.display='grid';
+
+  let tBruto=0,tBase=0,tBonus=0,tINSS=0,tIRPS=0,tDesc=0,tLiq=0,tINSS4=0;
+
+  tbody.innerHTML=funcionarios.map((f,i)=>{
+    const r=calcSalario(f.base,f.dep,f.bonus);
+    const inss4=r.base*0.04;
+    tBase+=r.base; tBonus+=r.bonusTotal; tBruto+=r.bruto; tINSS+=r.inss; tIRPS+=r.irps; tDesc+=r.inss+r.irps; tLiq+=r.liquido; tINSS4+=inss4;
+    const bonusLabel=f.bonus.length>0?f.bonus.map(b=>b.label||'Bonus').join(', '):'—';
+    const bonusVal=r.bonusTotal>0?`+${fmt(r.bonusTotal)}`:'—';
+    const depLabel=f.dep==0?'0':f.dep>=4?'4+':f.dep;
+    return `<tr>
+      <td style="color:var(--text-3);font-size:12px">${i+1}</td>
+      <td><strong>${f.nome}</strong></td>
+      <td style="text-align:center;color:var(--text-2);font-size:13px">${depLabel}</td>
+      <td class="mono">${fmt(f.base)}</td>
+      <td style="font-size:12px;color:var(--blue)" title="${bonusLabel}">${bonusVal}</td>
+      <td class="mono">${fmt(r.bruto)}</td>
+      <td class="mono v-orange">- ${fmt(r.inss)}</td>
+      <td class="mono v-red">- ${fmt(r.irps)}</td>
+      <td class="mono v-red">- ${fmt(r.inss+r.irps)}</td>
+      <td class="mono v-teal">${fmt(r.liquido)}</td>
+      <td class="mono" style="color:var(--purple)">+ ${fmt(inss4)}</td>
+      <td class="no-print"><div style="display:flex;gap:4px">
+        <button class="btn btn-ghost btn-sm" onclick="editarFuncionario(${f.id})"><i class="ti ti-pencil"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="removerFuncionario(${f.id})"><i class="ti ti-trash"></i></button>
+      </div></td>
+    </tr>`;
+  }).join('');
+
+  // totais footer
+  const s="padding:10px 12px;border-top:1.5px solid var(--border-med)";
+  const tfRow=`<tr style="background:var(--surface-2);font-weight:600;font-size:12px">
+    <td style="${s}" colspan="2">TOTAIS (${funcionarios.length})</td>
+    <td style="${s}"></td>
+    <td class="mono" style="${s}">${fmt(tBase)}</td>
+    <td class="mono" style="${s};color:var(--blue)">${tBonus>0?'+ '+fmt(tBonus):'—'}</td>
+    <td class="mono" style="${s}">${fmt(tBruto)}</td>
+    <td class="mono v-orange" style="${s}">- ${fmt(tINSS)}</td>
+    <td class="mono v-red" style="${s}">- ${fmt(tIRPS)}</td>
+    <td class="mono v-red" style="${s}">- ${fmt(tDesc)}</td>
+    <td class="mono v-teal" style="${s}">${fmt(tLiq)}</td>
+    <td class="mono" style="${s};color:var(--purple)">+ ${fmt(tINSS4)}</td>
+    <td class="no-print" style="${s}"></td>
+  </tr>`;
+  tbody.innerHTML+=tfRow;
+
+  document.getElementById('t-count').textContent=funcionarios.length;
+  document.getElementById('t-bruto').textContent=fmt(tBruto);
+  document.getElementById('t-inss').textContent=fmt(tINSS);
+  document.getElementById('t-irps').textContent=fmt(tIRPS);
+  document.getElementById('t-liq').textContent=fmt(tLiq);
+  document.getElementById('t-inss4').textContent=fmt(tINSS4);
+}
+
+function abrirModalFuncionario(id=null){
+  editingId=id;
+  fBonusList=[];
+  if(id){
+    const f=funcionarios.find(x=>x.id===id);
+    document.getElementById('modal-title').textContent='Editar funcionario';
+    document.getElementById('f-nome').value=f.nome;
+    document.getElementById('f-dep').value=f.dep;
+    document.getElementById('f-base').value=f.base;
+    fBonusList=f.bonus.map(b=>({...b}));
+  } else {
+    document.getElementById('modal-title').textContent='Adicionar funcionario';
+    document.getElementById('f-nome').value='';
+    document.getElementById('f-dep').value='0';
+    document.getElementById('f-base').value='0';
+  }
+  renderFBonusList();
+  previewModal();
+  document.getElementById('modal-overlay').classList.remove('hidden');
+  setTimeout(()=>document.getElementById('f-nome').focus(),100);
+}
+
+function fecharModal(){ document.getElementById('modal-overlay').classList.add('hidden'); editingId=null; }
+
+function salvarFuncionario(){
+  const nome=document.getElementById('f-nome').value.trim();
+  if(!nome){ alert('Introduz o nome do funcionario.'); return; }
+  const dep=document.getElementById('f-dep').value;
+  const base=parseFloat(document.getElementById('f-base').value)||0;
+  if(editingId){
+    const f=funcionarios.find(x=>x.id===editingId);
+    f.nome=nome; f.dep=dep; f.base=base; f.bonus=fBonusList.map(b=>({...b}));
+  } else {
+    funcionarios.push({id:Date.now(),nome,dep,base,bonus:fBonusList.map(b=>({...b}))});
+  }
+  fecharModal();
+  renderFolha();
+}
+
+function editarFuncionario(id){ abrirModalFuncionario(id); }
+
+function removerFuncionario(id){
+  if(!confirm('Remover este funcionario?')) return;
+  funcionarios=funcionarios.filter(f=>f.id!==id);
+  renderFolha();
+}
+
+function limparFolha(){
+  if(funcionarios.length===0) return;
+  if(!confirm('Limpar toda a folha?')) return;
+  funcionarios=[];
+  renderFolha();
+}
+
+function previewModal(){
+  const base=parseFloat(document.getElementById('f-base').value)||0;
+  const dep=document.getElementById('f-dep').value;
+  const r=calcSalario(base,dep,fBonusList);
+  document.getElementById('f-preview').textContent=fmt(r.liquido)+' MZN';
+}
+
+function renderFBonusList(){
+  document.getElementById('f-bonus-list').innerHTML=fBonusList.map(b=>`
+    <div class="bonus-row">
+      <input type="text" placeholder="Descricao" value="${b.label}" oninput="updateFBonus(${b.id},'label',this.value)">
+      <input type="number" placeholder="Valor MZN" value="${b.valor}" min="0" step="100" oninput="updateFBonus(${b.id},'valor',this.value)">
+      <button class="btn-remove" onclick="removeFBonus(${b.id})"><i class="ti ti-x"></i></button>
+    </div>`).join('');
+  previewModal();
+}
+
+function addFBonus(){ fBonusList.push({id:Date.now(),label:'',valor:0}); renderFBonusList(); }
+function removeFBonus(id){ fBonusList=fBonusList.filter(b=>b.id!==id); renderFBonusList(); }
+function updateFBonus(id,f,v){ const b=fBonusList.find(b=>b.id===id); if(b){ b[f]=f==='valor'?(parseFloat(v)||0):v; } previewModal(); }
+
+// ============================================================
+// CSV
+// ============================================================
+function baixarTemplate(){
+  const csv='nome,dependentes,salario_base,bonus_descricao,bonus_valor\nAna Machava,0,25000,,\nJoao Sitoe,2,30000,Subsidio Transporte,2000\n';
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='template_folha_salario.csv'; a.click();
+}
+
+function parseCSVLine(line){
+  const result=[];
+  let cur='', inQ=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(c==='"'){ inQ=!inQ; }
+    else if(c===','&&!inQ){ result.push(cur.trim()); cur=''; }
+    else { cur+=c; }
+  }
+  result.push(cur.trim());
+  return result;
+}
+
+function importarCSV(e){
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const lines=ev.target.result.split('\n').filter(l=>l.trim());
+    const header=parseCSVLine(lines[0]).map(h=>h.toLowerCase().replace(/['"]/g,'').trim());
+    let importados=0, erros=0;
+
+    const iNome=header.findIndex(h=>h.includes('nome'));
+    const iDep=header.findIndex(h=>h.includes('depend'));
+    const iBase=header.findIndex(h=>h==='salario base'||h==='salario_base');
+    const iBonusTotal=header.findIndex(h=>h==='bonus total'||h==='bonus_valor');
+    const iBonusDesc=header.findIndex(h=>h==='bonus_descricao');
+
+    for(let i=1;i<lines.length;i++){
+      const cols=parseCSVLine(lines[i]);
+      const nome=(iNome>=0?cols[iNome]:'').replace(/^"|"$/g,'').trim();
+      if(!nome||nome.toUpperCase().startsWith('TOTAL')){erros++;continue;}
+      const dep=String(Math.min(parseInt(iDep>=0?cols[iDep]||'0':'0')||0,4));
+      const base=iBase>=0?(parseFloat(cols[iBase])||0):0;
+      let bonus=[];
+      if(iBonusDesc>=0){
+        const desc=(cols[iBonusDesc]||'').replace(/^"|"$/g,'').trim();
+        const val=iBonusTotal>=0?(parseFloat(cols[iBonusTotal])||0):0;
+        if(desc&&val>0) bonus=[{id:Date.now()+i,label:desc,valor:val}];
+      } else if(iBonusTotal>=0){
+        const val=parseFloat(cols[iBonusTotal])||0;
+        if(val>0) bonus=[{id:Date.now()+i,label:'Bonus',valor:val}];
+      }
+      funcionarios.push({id:Date.now()+i*1000,nome,dep,base,bonus});
+      importados++;
+    }
+    renderFolha();
+    alert('Importados: '+importados+' funcionarios.'+(erros>0?' Ignorados: '+erros:''));
+  };
+  reader.readAsText(file);
+  e.target.value='';
+}
+
+function exportarCSV(){
+  if(funcionarios.length===0){alert('Nenhum funcionario na folha.');return;}
+  let csv='Nome,Dependentes,Salario Base,Bonus Total,Bruto,INSS,IRPS,Total Descontos,Liquido\n';
+  funcionarios.forEach(f=>{
+    const r=calcSalario(f.base,f.dep,f.bonus);
+    csv+=`"${f.nome}",${f.dep},${f.base.toFixed(2)},${r.bonusTotal.toFixed(2)},${r.bruto.toFixed(2)},${r.inss.toFixed(2)},${r.irps.toFixed(2)},${(r.inss+r.irps).toFixed(2)},${r.liquido.toFixed(2)}\n`;
+  });
+  const totais=funcionarios.reduce((acc,f)=>{
+    const r=calcSalario(f.base,f.dep,f.bonus);
+    acc.bruto+=r.bruto;acc.inss+=r.inss;acc.irps+=r.irps;acc.liq+=r.liquido;acc.bonus+=r.bonusTotal;return acc;
+  },{bruto:0,inss:0,irps:0,liq:0,bonus:0});
+  csv+=`"TOTAL (${funcionarios.length})",,,,${totais.bruto.toFixed(2)},${totais.inss.toFixed(2)},${totais.irps.toFixed(2)},${(totais.inss+totais.irps).toFixed(2)},${totais.liq.toFixed(2)}\n`;
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='folha_salario_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+}
+
+// print date
+document.getElementById('print-date').textContent='Gerado em: '+new Date().toLocaleDateString('pt-MZ',{day:'2-digit',month:'long',year:'numeric'});
+
+// INIT
+renderBonusList();
+calcular();
+calcularInverso();
+renderFolha();
+</script>
+</body>
+</html>

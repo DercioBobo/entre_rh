@@ -12,6 +12,8 @@
   "mes",
   "ano",
   "n_de_faltas",
+  "section_dias",
+  "dias",
   "section_obs",
   "observacoes",
   "amended_from"
@@ -69,8 +71,19 @@
    "fieldtype": "Int",
    "in_list_view": 1,
    "label": "Nº de Faltas",
-   "reqd": 1,
-   "description": "Dias de ausência injustificada no mês."
+   "description": "No modo Por Dias é calculado a partir dos dias marcados; no modo Por Total é introduzido directamente. Vários registos do mesmo mês somam."
+  },
+  {
+   "fieldname": "section_dias",
+   "fieldtype": "Section Break",
+   "label": "Dias de Ausência"
+  },
+  {
+   "fieldname": "dias",
+   "fieldtype": "Table",
+   "label": "Dias",
+   "options": "Dia De Ausencia",
+   "description": "Os dias concretos de falta — cada dia só pode ser marcado uma vez por funcionário. Obrigatório no modo de registo Por Dias."
   },
   {
    "fieldname": "section_obs",

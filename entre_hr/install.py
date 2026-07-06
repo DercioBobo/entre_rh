@@ -51,7 +51,11 @@ def seed_padroes():
 	unset; IRPS: bracket table empty; 13º: payment month unset), so later operator
 	edits — including deliberately turning one off — are never overwritten. When the
 	law changes, the operator updates the rate / table / month in Settings; no deploy."""
-	from entre_hr.payroll.statutory import TABELA_IRPS_OFICIAL, TAXA_INSS_TRABALHADOR
+	from entre_hr.payroll.statutory import (
+		TABELA_IRPS_OFICIAL,
+		TAXA_INSS_EMPREGADOR,
+		TAXA_INSS_TRABALHADOR,
+	)
 	from entre_hr.utils import ensure_salary_component
 
 	settings = frappe.get_doc("Entre HR Settings")
@@ -64,6 +68,10 @@ def seed_padroes():
 
 	if not settings.get("metodo_emprestimo"):
 		settings.metodo_emprestimo = "Saldo Devedor"
+		mudou = True
+
+	if not settings.get("modo_registo_faltas"):
+		settings.modo_registo_faltas = "Por Dias"
 		mudou = True
 
 	if not settings.get("componente_adiantamento"):
@@ -81,6 +89,10 @@ def seed_padroes():
 		settings.activo_inss = 1
 		if not settings.componente_inss:
 			settings.componente_inss = ensure_salary_component("INSS", "Deduction")
+		mudou = True
+
+	if flt(settings.get("inss_taxa_empregador")) <= 0:
+		settings.inss_taxa_empregador = TAXA_INSS_EMPREGADOR
 		mudou = True
 
 	if not settings.get("irps_tabela"):

@@ -25,6 +25,7 @@ from frappe.utils import cint, flt, getdate
 from entre_hr.utils import MESES
 
 TAXA_INSS_TRABALHADOR = 3.0  # % worker share, by law — install-time seed
+TAXA_INSS_EMPREGADOR = 4.0  # % employer share, by law — company cost, not a slip line
 
 MAX_DEPENDENTES = 4  # the official table tops out at "4 ou mais dependentes"
 
