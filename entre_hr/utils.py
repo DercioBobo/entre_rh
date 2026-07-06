@@ -136,6 +136,11 @@ def derivar_periodo_pagamento(doc):
 	doc.data_de_inicio = inicio
 	doc.data_de_fim = get_last_day(add_months(inicio, meses - 1))
 
+	# Payment tracking (written by salary_slip_hooks on slip submit/cancel).
+	doc.valor_pago = flt(doc.get("valor_pago"))
+	doc.valor_pendente = flt(doc.valor_total) - doc.valor_pago
+	doc.status = "Pago" if doc.valor_pendente <= 0.005 else "Em Curso"
+
 
 def prestacao_do_mes(row, data_referencia):
 	"""Installment a schedule row contributes to the month containing

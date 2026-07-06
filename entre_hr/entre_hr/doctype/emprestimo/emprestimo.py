@@ -34,6 +34,7 @@ class Emprestimo(Document):
 		self.data_de_fim = get_last_day(add_months(inicio, meses - 1))
 		self.salario_base = base_para_data(self.funcionario, inicio)
 		self.saldo_devedor = flt(self.valor_total) - flt(self.valor_pago)
+		self.status = "Pago" if flt(self.saldo_devedor) <= 0.005 else "Em Curso"
 
 	def _avisar_limite(self):
 		# Non-blocking guidance: installment above 1/3 of the base is usually excessive.

@@ -1,5 +1,5 @@
 from frappe.model.document import Document
 
 
-class PagamentoDeEmprestimo(Document):
+class PagamentoAplicado(Document):
 	pass

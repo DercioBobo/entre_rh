@@ -76,7 +76,7 @@ entre_hr.periodo.eventos_data = function () {
 
 entre_hr.periodo.actualizar_data = function (frm) {
 	if (!frm.doc.data_de_inicio) {
-		entre_hr.periodo.render_simulador(frm, []);
+		entre_hr.periodo.render_plano(frm, []);
 		return;
 	}
 	const inicio = frappe.datetime.str_to_obj(frm.doc.data_de_inicio);
@@ -91,7 +91,7 @@ entre_hr.periodo._derivar = function (frm, mes_idx, ano, opts) {
 	const doc = frm.doc;
 	const n = cint(doc.numero_de_meses);
 	if (mes_idx < 0 || !ano || n < 1) {
-		entre_hr.periodo.render_simulador(frm, []);
+		entre_hr.periodo.render_plano(frm, []);
 		return;
 	}
 
@@ -128,21 +128,48 @@ entre_hr.periodo._derivar = function (frm, mes_idx, ano, opts) {
 		}
 	}
 
-	// The final installment absorbs the rounding remainder so the sum is exact
-	// (same rule as entre_hr.utils.prestacao_do_mes).
+	// Payment plan: months already settled (from the pagamentos history written on
+	// slip submit) in green with their slip, remaining months forecast in orange.
+	// A pending month takes min(prestação, restante), so the final installment
+	// carries the exact remainder (same rule as entre_hr.utils.prestacao_do_mes),
+	// and months skipped in Saldo Devedor mode extend the plan past the schedule.
+	const pagos_por_mes = {};
+	let pago_total = 0;
+	(doc.pagamentos || []).forEach((p) => {
+		const chave = (p.data || "").slice(0, 7); // YYYY-MM
+		(pagos_por_mes[chave] = pagos_por_mes[chave] || []).push(p);
+		pago_total += flt(p.valor);
+	});
+
 	const linhas = [];
-	for (let k = 0; k < n; k++) {
+	let restante = flt(total - pago_total, 2);
+	for (let k = 0; k < n + 36; k++) {
+		if (k >= n && restante <= 0.005) break;
 		const idx = mes_idx + k;
-		const ultima = k === n - 1 && n > 1 && total > 0;
-		linhas.push({
-			mes: `${entre_hr.periodo.MESES[idx % 12]} ${ano + Math.floor(idx / 12)}`,
-			valor: ultima ? flt(total - mensal * (n - 1), 2) : mensal,
-		});
+		const ano_k = ano + Math.floor(idx / 12);
+		const chave = `${ano_k}-${pad((idx % 12) + 1)}`;
+		const nome_mes = `${entre_hr.periodo.MESES[idx % 12]} ${ano_k}`;
+		const pagos = pagos_por_mes[chave];
+		if (pagos) {
+			linhas.push({
+				mes: nome_mes,
+				valor: pagos.reduce((soma, p) => soma + flt(p.valor), 0),
+				estado: "Pago",
+				recibos: pagos.map((p) => p.recibo).filter(Boolean),
+			});
+		} else if (restante > 0.005) {
+			const valor = flt(Math.min(flt(mensal), restante), 2);
+			linhas.push({ mes: nome_mes, valor: valor, estado: "Pendente" });
+			restante = flt(restante - valor, 2);
+		}
 	}
-	entre_hr.periodo.render_simulador(frm, linhas);
+	entre_hr.periodo.render_plano(frm, linhas, {
+		pago: pago_total,
+		pendente: flt(total - pago_total, 2),
+	});
 };
 
-entre_hr.periodo.render_simulador = function (frm, linhas) {
+entre_hr.periodo.render_plano = function (frm, linhas, resumo) {
 	const campo = frm.fields_dict.simulador_html;
 	if (!campo) return;
 	if (!linhas.length) {
@@ -152,19 +179,31 @@ entre_hr.periodo.render_simulador = function (frm, linhas) {
 		return;
 	}
 	const moeda = (v) => frappe.format(v, { fieldtype: "Currency" });
+	const cabecalho = resumo
+		? `<p><b>${__("Pago")}:</b> ${moeda(resumo.pago)} &nbsp;•&nbsp; <b>${__("Pendente")}:</b> ${moeda(resumo.pendente)}</p>`
+		: "";
 	const corpo = linhas
-		.map(
-			(l) =>
-				`<tr><td>${l.mes}</td><td style="text-align:right">${moeda(l.valor)}</td></tr>`
-		)
+		.map((l) => {
+			const estado =
+				l.estado === "Pago"
+					? `<span class="indicator-pill green">${__("Pago")}</span>${
+							l.recibos && l.recibos.length
+								? ` <small class="text-muted">${l.recibos.join(", ")}</small>`
+								: ""
+						}`
+					: `<span class="indicator-pill orange">${__("Pendente")}</span>`;
+			return `<tr><td>${l.mes}</td><td style="text-align:right">${moeda(l.valor)}</td><td>${estado}</td></tr>`;
+		})
 		.join("");
 	const total = linhas.reduce((soma, l) => soma + l.valor, 0);
 	campo.$wrapper.html(`
-		<table class="table table-bordered table-sm" style="max-width: 420px">
+		${cabecalho}
+		<table class="table table-bordered table-sm" style="max-width: 560px">
 			<thead>
 				<tr>
 					<th>${__("Mês")}</th>
 					<th style="text-align:right">${__("Valor")}</th>
+					<th>${__("Estado")}</th>
 				</tr>
 			</thead>
 			<tbody>${corpo}</tbody>
@@ -172,6 +211,7 @@ entre_hr.periodo.render_simulador = function (frm, linhas) {
 				<tr>
 					<th>${__("Total")} (${linhas.length} ${linhas.length === 1 ? __("mês") : __("meses")})</th>
 					<th style="text-align:right">${moeda(total)}</th>
+					<th></th>
 				</tr>
 			</tfoot>
 		</table>`);

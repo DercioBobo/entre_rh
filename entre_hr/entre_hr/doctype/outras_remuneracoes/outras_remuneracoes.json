@@ -21,6 +21,11 @@
   "column_break_2",
   "data_de_inicio",
   "data_de_fim",
+  "section_pagamentos",
+  "status",
+  "valor_pago",
+  "valor_pendente",
+  "pagamentos",
   "section_simulacao",
   "simulador_html",
   "section_obs",
@@ -151,9 +156,56 @@
   },
   {
    "collapsible": 1,
+   "fieldname": "section_pagamentos",
+   "fieldtype": "Section Break",
+   "label": "Pagamentos"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "Em Curso",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "no_copy": 1,
+   "options": "Em Curso\nPago",
+   "read_only": 1,
+   "description": "Actualizado automaticamente: passa a \"Pago\" quando o valor pago atinge o total."
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "valor_pago",
+   "fieldtype": "Currency",
+   "label": "Valor Pago",
+   "no_copy": 1,
+   "read_only": 1,
+   "description": "Total já aplicado em recibos submetidos. Gerido pelo sistema."
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "valor_pendente",
+   "fieldtype": "Currency",
+   "label": "Valor Pendente",
+   "no_copy": 1,
+   "read_only": 1,
+   "description": "Valor total − valor pago. Gerido pelo sistema."
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "pagamentos",
+   "fieldtype": "Table",
+   "label": "Histórico de Pagamentos",
+   "no_copy": 1,
+   "options": "Pagamento Aplicado",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
    "fieldname": "section_simulacao",
    "fieldtype": "Section Break",
-   "label": "Simulação de Pagamentos"
+   "label": "Plano de Pagamentos"
   },
   {
    "fieldname": "simulador_html",

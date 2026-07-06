@@ -37,12 +37,12 @@ def before_submit(doc, method=None):
 
 def on_submit(doc, method=None):
 	_marcar_reclamacoes(doc)
-	_marcar_emprestimos(doc)
+	_marcar_pagamentos(doc)
 
 
 def on_cancel(doc, method=None):
 	_desmarcar_reclamacoes(doc)
-	_desmarcar_emprestimos(doc)
+	_desmarcar_pagamentos(doc)
 
 
 def _settings():
@@ -348,61 +348,103 @@ def _desmarcar_reclamacoes(slip):
 			frappe.db.set_value(doctype, name, "aplicado_em", None, update_modified=False)
 
 
-def _marcar_emprestimos(slip):
-	"""On slip submit (Saldo Devedor mode): record each loan's installment in its
-	payment history and refresh valor_pago / saldo_devedor, so the next slip deducts
-	from the updated balance and never double-charges."""
+# Field that holds "what is still owed" on each schedule doctype.
+CAMPO_PENDENTE = {
+	"Emprestimo": "saldo_devedor",
+	"Outras Deducoes": "valor_pendente",
+	"Outras Remuneracoes": "valor_pendente",
+}
+
+
+def _marcar_pagamentos(slip):
+	"""On slip submit: record what this slip settled on each schedule document
+	(Emprestimo, Outras Deducoes, Outras Remuneracoes) in its payment history, and
+	refresh valor_pago / pending / status. For loans in Saldo Devedor mode this is
+	also what makes the balance advance, so the next slip never double-charges."""
 	settings = _settings()
-	if not cint(settings.folha_activo) or _modo_emprestimo(settings) == "Calendário":
+	if not cint(settings.folha_activo):
 		return
-	for nome, valor in _emprestimos_com_saldo(slip):
-		if frappe.db.exists(
-			"Pagamento De Emprestimo", {"parent": nome, "recibo": slip.name}
-		):
-			continue
-		frappe.get_doc(
-			{
-				"doctype": "Pagamento De Emprestimo",
-				"parenttype": "Emprestimo",
-				"parent": nome,
-				"parentfield": "pagamentos",
-				"idx": cint(frappe.db.count("Pagamento De Emprestimo", {"parent": nome})) + 1,
-				"docstatus": 1,
-				"recibo": slip.name,
-				"data": slip.end_date,
-				"valor": valor,
-			}
-		).insert(ignore_permissions=True)
-		_recalcular_pagamentos_emprestimo(nome)
+
+	if _modo_emprestimo(settings) == "Saldo Devedor":
+		emprestimos = _emprestimos_com_saldo(slip)
+	else:
+		rows = frappe.get_all(
+			"Emprestimo",
+			filters=_covering("Emprestimo", slip),
+			fields=["name"] + PERIODO_FIELDS,
+		)
+		emprestimos = [(r.name, prestacao_do_mes(r, slip.end_date)) for r in rows]
+	for nome, valor in emprestimos:
+		_registar_pagamento("Emprestimo", nome, slip, valor)
+
+	for doctype in ("Outras Deducoes", "Outras Remuneracoes"):
+		rows = frappe.get_all(
+			doctype,
+			filters=_covering(doctype, slip),
+			fields=["name"] + PERIODO_FIELDS,
+		)
+		for row in rows:
+			_registar_pagamento(doctype, row.name, slip, prestacao_do_mes(row, slip.end_date))
 
 
-def _desmarcar_emprestimos(slip):
-	"""On slip cancel: remove the payments that slip recorded and restore the
-	balances, so reprocessing the month charges the installment again."""
+def _registar_pagamento(doctype, nome, slip, valor):
+	if flt(valor) <= 0:
+		return
+	if frappe.db.exists(
+		"Pagamento Aplicado", {"parenttype": doctype, "parent": nome, "recibo": slip.name}
+	):
+		return
+	frappe.get_doc(
+		{
+			"doctype": "Pagamento Aplicado",
+			"parenttype": doctype,
+			"parent": nome,
+			"parentfield": "pagamentos",
+			"idx": cint(
+				frappe.db.count("Pagamento Aplicado", {"parenttype": doctype, "parent": nome})
+			)
+			+ 1,
+			"docstatus": 1,
+			"recibo": slip.name,
+			"data": slip.end_date,
+			"valor": valor,
+		}
+	).insert(ignore_permissions=True)
+	_recalcular_pagamentos(doctype, nome)
+
+
+def _desmarcar_pagamentos(slip):
+	"""On slip cancel: remove the payments that slip recorded and restore each
+	source document's balance/status, so reprocessing the month applies them again."""
 	rows = frappe.get_all(
-		"Pagamento De Emprestimo",
+		"Pagamento Aplicado",
 		filters={"recibo": slip.name},
-		fields=["name", "parent"],
+		fields=["name", "parenttype", "parent"],
 	)
 	for row in rows:
-		frappe.db.delete("Pagamento De Emprestimo", {"name": row.name})
-	for parent in {row.parent for row in rows}:
-		_recalcular_pagamentos_emprestimo(parent)
+		frappe.db.delete("Pagamento Aplicado", {"name": row.name})
+	for doctype, parent in {(row.parenttype, row.parent) for row in rows}:
+		_recalcular_pagamentos(doctype, parent)
 
 
-def _recalcular_pagamentos_emprestimo(nome):
+def _recalcular_pagamentos(doctype, nome):
 	pago = sum(
 		flt(valor)
 		for valor in frappe.get_all(
-			"Pagamento De Emprestimo",
-			filters={"parenttype": "Emprestimo", "parent": nome},
+			"Pagamento Aplicado",
+			filters={"parenttype": doctype, "parent": nome},
 			pluck="valor",
 		)
 	)
-	total = flt(frappe.db.get_value("Emprestimo", nome, "valor_total"))
+	total = flt(frappe.db.get_value(doctype, nome, "valor_total"))
+	pendente = total - pago
 	frappe.db.set_value(
-		"Emprestimo",
+		doctype,
 		nome,
-		{"valor_pago": pago, "saldo_devedor": total - pago},
+		{
+			"valor_pago": pago,
+			CAMPO_PENDENTE[doctype]: pendente,
+			"status": "Pago" if pendente <= 0.005 else "Em Curso",
+		},
 		update_modified=False,
 	)
