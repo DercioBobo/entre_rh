@@ -432,14 +432,9 @@ frappe.ui.form.on("Outras Deducoes", entre_hr.periodo.eventos());
 frappe.ui.form.on("Outras Remuneracoes", entre_hr.periodo.eventos());
 frappe.ui.form.on("Emprestimo", entre_hr.periodo.eventos_data());
 
-// Ausencia: the form adapts to the company's entry mode (Settings), and in Por Dias
-// mode n_de_faltas mirrors the days table live (the server re-derives on save).
-entre_hr.ausencias.contar_dias = function (frm) {
-	if (frm.modo_faltas === "Por Total" && !(frm.doc.dias || []).length) return;
-	const n = (frm.doc.dias || []).filter((d) => d.data).length;
-	if (cint(frm.doc.n_de_faltas) !== n) frm.set_value("n_de_faltas", n);
-};
-
+// Ausencia: the form adapts to the company's entry mode (Settings). In Por Dias
+// mode the record IS one day — Data drives mês/ano/n_de_faltas, mirrored here for
+// instant feedback (the server re-derives authoritatively on save).
 frappe.ui.form.on("Ausencia", {
 	refresh(frm) {
 		frappe.db
@@ -447,16 +442,18 @@ frappe.ui.form.on("Ausencia", {
 			.then((modo) => {
 				frm.modo_faltas = modo || "Por Dias";
 				const por_dias = frm.modo_faltas === "Por Dias";
+				frm.set_df_property("data", "reqd", por_dias ? 1 : 0);
+				frm.set_df_property("data", "hidden", por_dias ? 0 : 1);
+				frm.set_df_property("mes", "read_only", por_dias ? 1 : 0);
+				frm.set_df_property("ano", "read_only", por_dias ? 1 : 0);
 				frm.set_df_property("n_de_faltas", "read_only", por_dias ? 1 : 0);
-				frm.set_df_property("dias", "reqd", por_dias ? 1 : 0);
 			});
 	},
-	dias_add: entre_hr.ausencias.contar_dias,
-	dias_remove: entre_hr.ausencias.contar_dias,
-});
-
-frappe.ui.form.on("Dia De Ausencia", {
 	data(frm) {
-		entre_hr.ausencias.contar_dias(frm);
+		if (frm.modo_faltas !== "Por Dias" || !frm.doc.data) return;
+		const data = frappe.datetime.str_to_obj(frm.doc.data);
+		frm.set_value("mes", entre_hr.periodo.MESES[data.getMonth()]);
+		frm.set_value("ano", data.getFullYear());
+		frm.set_value("n_de_faltas", 1);
 	},
 });

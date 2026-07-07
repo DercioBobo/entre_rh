@@ -9,11 +9,10 @@
   "funcionario",
   "funcionario_nome",
   "column_break_1",
+  "data",
   "mes",
   "ano",
   "n_de_faltas",
-  "section_dias",
-  "dias",
   "section_obs",
   "observacoes",
   "amended_from"
@@ -50,6 +49,13 @@
    "fieldtype": "Column Break"
   },
   {
+   "fieldname": "data",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Dia da Falta",
+   "description": "O dia concreto de ausência — obrigatório no modo de registo Por Dias (o dia registado É o dia). Mês/Ano e Nº de Faltas são derivados automaticamente."
+  },
+  {
    "fieldname": "mes",
    "fieldtype": "Select",
    "in_list_view": 1,
@@ -71,19 +77,7 @@
    "fieldtype": "Int",
    "in_list_view": 1,
    "label": "Nº de Faltas",
-   "description": "No modo Por Dias é calculado a partir dos dias marcados; no modo Por Total é introduzido directamente. Vários registos do mesmo mês somam."
-  },
-  {
-   "fieldname": "section_dias",
-   "fieldtype": "Section Break",
-   "label": "Dias de Ausência"
-  },
-  {
-   "fieldname": "dias",
-   "fieldtype": "Table",
-   "label": "Dias",
-   "options": "Dia De Ausencia",
-   "description": "Os dias concretos de falta — cada dia só pode ser marcado uma vez por funcionário. Obrigatório no modo de registo Por Dias."
+   "description": "No modo Por Dias é sempre 1 (um registo = um dia); no modo Por Total é introduzido directamente. Vários registos do mesmo mês somam."
   },
   {
    "fieldname": "section_obs",
