@@ -51,9 +51,12 @@ def actualizar_idades():
 			frappe.db.set_value("Employee", row.name, "custom_idade", idade, update_modified=False)
 
 
-def ensure_salary_component(nome, tipo):
+def ensure_salary_component(nome, tipo, **campos):
 	"""Return the component name, auto-creating it with the given type ('Earning' /
-	'Deduction') on first use. Returns None when no name is configured."""
+	'Deduction') on first use. Returns None when no name is configured.
+
+	`campos` overrides fields on the created doc (e.g. amount_based_on_formula=1,
+	formula="base"); it is ignored when the component already exists."""
 	if not nome:
 		return None
 	if not frappe.db.exists("Salary Component", nome):
@@ -65,6 +68,7 @@ def ensure_salary_component(nome, tipo):
 				"type": tipo,
 				"amount_based_on_formula": 0,
 				"depends_on_payment_days": 0,
+				**campos,
 			}
 		)
 		doc.flags.ignore_permissions = True

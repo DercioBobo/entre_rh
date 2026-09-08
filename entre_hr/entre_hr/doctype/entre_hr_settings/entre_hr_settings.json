@@ -59,7 +59,7 @@
    "fieldtype": "Link",
    "label": "Estrutura Salarial Padrão",
    "options": "Salary Structure",
-   "description": "Estrutura usada nas novas atribuições salariais."
+   "description": "Estrutura usada nas novas atribuições salariais. Preenchida automaticamente na instalação com a estrutura \"Base\" (um único componente de vencimento, \"Salario Base\", fórmula = base)."
   },
   {
    "fieldname": "payroll_payable_account",

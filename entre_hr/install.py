@@ -42,6 +42,52 @@ COMPONENTES_PADRAO = [
 	("componente_emprestimo", "Emprestimo", "Deduction"),
 ]
 
+ESTRUTURA_PADRAO = "Base"
+COMPONENTE_BASE = "Salario Base"  # unaccented, matching "13o Salario" / "Adiantamento de Salario"
+
+
+def _ensure_estrutura_base():
+	"""Create + submit the default 'Base' Salary Structure and return its name.
+
+	One earning row — the 'Salario Base' component, amount = formula `base`, which HRMS
+	resolves to the employee's Salary Structure Assignment base on every slip. Taxable
+	(INSS/IRPS build on it) and NOT payment-day dependent — absences are the hook's
+	separate 'Faltas' deduction, so prorating base here too would deduct them twice.
+
+	Deductions stay out: INSS, IRPS, Faltas, Emprestimo and Adiantamento are appended
+	by salary_slip_hooks at assembly time. Returns None when no default company is set
+	yet (the operator then points estrutura_salarial_padrao at a structure by hand)."""
+	from entre_hr.utils import ensure_salary_component
+
+	if frappe.db.exists("Salary Structure", ESTRUTURA_PADRAO):
+		return ESTRUTURA_PADRAO
+
+	import erpnext
+
+	company = erpnext.get_default_company()
+	if not company:
+		return None
+
+	componente = ensure_salary_component(
+		COMPONENTE_BASE, "Earning", amount_based_on_formula=1, formula="base", is_tax_applicable=1
+	)
+
+	estrutura = frappe.new_doc("Salary Structure")
+	estrutura.name = ESTRUTURA_PADRAO
+	estrutura.company = company
+	estrutura.is_active = "Yes"
+	estrutura.payroll_frequency = "Monthly"
+	moeda = frappe.get_cached_value("Company", company, "default_currency")
+	if moeda:
+		estrutura.currency = moeda
+	estrutura.append(
+		"earnings",
+		{"salary_component": componente, "amount_based_on_formula": 1, "formula": "base"},
+	)
+	estrutura.flags.ignore_permissions = True
+	estrutura.insert()
+	estrutura.submit()
+	return estrutura.name
 
 
 def seed_padroes():
@@ -50,7 +96,10 @@ def seed_padroes():
 	Statutory (INSS, IRPS, 13º) each seed only on their own first run (INSS: rate
 	unset; IRPS: bracket table empty; 13º: payment month unset), so later operator
 	edits — including deliberately turning one off — are never overwritten. When the
-	law changes, the operator updates the rate / table / month in Settings; no deploy."""
+	law changes, the operator updates the rate / table / month in Settings; no deploy.
+
+	The default "Base" Salary Structure is seeded the same way — only while
+	estrutura_salarial_padrao is empty and a default company exists."""
 	from entre_hr.payroll.statutory import (
 		TABELA_IRPS_OFICIAL,
 		TAXA_INSS_EMPREGADOR,
@@ -64,6 +113,12 @@ def seed_padroes():
 	for campo, nome, tipo in COMPONENTES_PADRAO:
 		if not settings.get(campo):
 			settings.set(campo, ensure_salary_component(nome, tipo))
+			mudou = True
+
+	if not settings.get("estrutura_salarial_padrao"):
+		estrutura = _ensure_estrutura_base()
+		if estrutura:
+			settings.estrutura_salarial_padrao = estrutura
 			mudou = True
 
 	if not settings.get("metodo_emprestimo"):
