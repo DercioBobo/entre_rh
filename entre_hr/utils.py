@@ -51,6 +51,12 @@ def actualizar_idades():
 			frappe.db.set_value("Employee", row.name, "custom_idade", idade, update_modified=False)
 
 
+def nome_estrutura_base(company):
+	"""Canonical name of a company's default Salary Structure: 'Base - <abbr>'."""
+	abbr = frappe.get_cached_value("Company", company, "abbr") or company
+	return f"Base - {abbr}"
+
+
 def ensure_salary_component(nome, tipo, **campos):
 	"""Return the component name, auto-creating it with the given type ('Earning' /
 	'Deduction') on first use. Returns None when no name is configured.

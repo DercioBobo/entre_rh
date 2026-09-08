@@ -43,9 +43,14 @@ staff: `[["Employee","status","!=","Left"]]` (constant `EMPLOYEE_LINK_FILTERS` i
 
 ### Configuration
 
-All configuration lives in the single doctype **`Entre HR Settings`** — nothing is
-hard-coded (salary structure, payable account, salary components, leave type, statutory
-flags, etc.).
+Site-wide configuration lives in the single doctype **`Entre HR Settings`** — nothing is
+hard-coded (payable account, salary components, leave type, statutory flags, etc.).
+
+Per-company payroll setup (Salary Structure `Base - <abbr>`, GL accounts, salary
+component → account mappings, a Mon–Fri holiday list) is created automatically by
+`entre_hr/setup_empresa.py` — on Company `on_update`, and looped over every company on
+install/migrate. Re-runnable via `configurar_empresa(company)`. After it runs the only
+manual payroll steps are: create the Employee and click **Definir Salário**.
 
 ### Approvals
 

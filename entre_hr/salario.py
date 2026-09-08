@@ -9,11 +9,34 @@ import frappe
 from frappe import _
 from frappe.utils import cint, flt, getdate, today
 
-from entre_hr.utils import ROLES_GESTAO_RH
+from entre_hr.utils import ROLES_GESTAO_RH, nome_estrutura_base
 
 
 def get_settings():
 	return frappe.get_cached_doc("Entre HR Settings")
+
+
+def estrutura_para(company):
+	"""Salary Structure for `company`, in order of preference:
+	1. Settings.estrutura_salarial_padrao when it belongs to this company (keeps a
+	   hand-picked single-company setup working);
+	2. the seeded 'Base - <abbr>';
+	3. any active submitted structure for the company.
+	Returns None when nothing is configured yet."""
+	settings = get_settings()
+	preferida = settings.estrutura_salarial_padrao
+	if preferida and frappe.db.get_value("Salary Structure", preferida, "company") == company:
+		return preferida
+
+	candidata = nome_estrutura_base(company)
+	if frappe.db.exists("Salary Structure", {"name": candidata, "docstatus": 1}):
+		return candidata
+
+	return frappe.db.get_value(
+		"Salary Structure",
+		{"company": company, "is_active": "Yes", "docstatus": 1},
+		"name",
+	)
 
 
 def get_latest_ssa(employee):
@@ -63,10 +86,6 @@ def resolver_salario_base(employee):
 def aplicar_salario_base(employee, silent=False):
 	"""Create/refresh the employee's submitted SSA with the resolved base. Idempotent."""
 	settings = get_settings()
-	if not settings.estrutura_salarial_padrao:
-		frappe.throw(
-			_("Defina a Estrutura Salarial Padrão em Entre HR Settings antes de aplicar salários.")
-		)
 
 	base = resolver_salario_base(employee)
 	latest = get_latest_ssa(employee)
@@ -78,6 +97,14 @@ def aplicar_salario_base(employee, silent=False):
 	emp = frappe.db.get_value(
 		"Employee", employee, ["date_of_joining", "company"], as_dict=True
 	)
+
+	estrutura = estrutura_para(emp.company)
+	if not estrutura:
+		frappe.throw(
+			_("Sem estrutura salarial para {0}. Abra a empresa e corra a configuração Entre HR.").format(
+				emp.company
+			)
+		)
 
 	if latest:
 		# A raise/change starts today, clamped to never precede joining.
@@ -97,11 +124,14 @@ def aplicar_salario_base(employee, silent=False):
 	ssa = frappe.new_doc("Salary Structure Assignment")
 	ssa.employee = employee
 	ssa.company = emp.company
-	ssa.salary_structure = settings.estrutura_salarial_padrao
+	ssa.salary_structure = estrutura
 	ssa.from_date = from_date
 	ssa.base = base
-	if settings.payroll_payable_account:
-		ssa.payroll_payable_account = settings.payroll_payable_account
+	# Settings account only when it belongs to this employee's company; otherwise let
+	# HRMS fall back to the company's own default_payroll_payable_account.
+	conta = settings.payroll_payable_account
+	if conta and frappe.db.get_value("Account", conta, "company") == emp.company:
+		ssa.payroll_payable_account = conta
 	ssa.flags.ignore_permissions = True
 	ssa.insert()
 	ssa.submit()

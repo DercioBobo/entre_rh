@@ -21,6 +21,7 @@ app_include_js = "/assets/entre_hr/js/entre_hr.js"
 
 doctype_js = {
     "Employee": "public/js/employee.js",
+    "Company": "public/js/company.js",
 }
 
 # Fixtures
@@ -55,6 +56,12 @@ fixtures = [
 doc_events = {
     "Employee": {
         "validate": "entre_hr.utils.definir_idade",
+    },
+    "Company": {
+        "on_update": "entre_hr.setup_empresa.on_update",
+    },
+    "Salary Component": {
+        "after_insert": "entre_hr.setup_empresa.mapear_novo_componente",
     },
     "Salary Slip": {
         "before_insert": "entre_hr.payroll.salary_slip_hooks.before_insert",
