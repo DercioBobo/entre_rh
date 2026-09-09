@@ -91,7 +91,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "Movimentos Salariais",
-   "link_count": 4,
+   "link_count": 5,
    "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
@@ -112,6 +112,16 @@
    "label": "Outras Remunerações",
    "link_count": 0,
    "link_to": "Outras Remuneracoes",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Subsídio Fixo",
+   "link_count": 0,
+   "link_to": "Subsidio Fixo",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
@@ -224,7 +234,7 @@
    "type": "Link"
   }
  ],
- "modified": "2026-07-02 00:00:00.000000",
+ "modified": "2026-09-09 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Entre HR",
  "name": "Entre HR",

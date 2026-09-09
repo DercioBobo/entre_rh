@@ -73,6 +73,7 @@ def _assemble(slip):
 	_add_faltas(slip, settings, base, divisor, faltas)
 	_add_deducoes(slip)
 	_add_remuneracoes(slip)
+	_add_subsidios_fixos(slip)
 	_add_emprestimos(slip, settings)
 	_add_reclamacoes(slip, settings)
 	_add_adiantamentos(slip, settings)
@@ -123,6 +124,15 @@ def _append_managed(slip, parentfield, componente, amount):
 			"custom_origem_entre_hr": ORIGEM,
 		},
 	)
+
+
+def _componentes_geridos(slip, parentfield):
+	"""Salary Components already added to `parentfield` by this app in this cycle."""
+	return {
+		row.salary_component
+		for row in slip.get(parentfield) or []
+		if row.get("custom_origem_entre_hr") and row.salary_component
+	}
 
 
 # ---------------------------------------------------------------------------
@@ -185,6 +195,29 @@ def _add_remuneracoes(slip):
 		)
 	for componente, amount in por_componente.items():
 		_append_managed(slip, "earnings", componente, amount)
+
+
+def _add_subsidios_fixos(slip):
+	"""Subsidio Fixo: recurring company-wide earnings. Every active row for the
+	slip's company adds its flat monthly amount. Runs after _add_remuneracoes and
+	before _add_estatutarios, so a taxable component lands in the INSS/IRPS base.
+
+	A per-employee Outras Remuneração for the same component OVERRIDES the company
+	default — when that component is already on the slip (added just above), the
+	fixed amount is skipped entirely, not added on top."""
+	company = slip.company or frappe.db.get_value("Employee", slip.employee, "company")
+	if not company:
+		return
+	ja_presentes = _componentes_geridos(slip, "earnings")
+	rows = frappe.get_all(
+		"Subsidio Fixo",
+		filters={"company": company, "activo": 1},
+		fields=["componente", "valor"],
+	)
+	for row in rows:
+		if row.componente in ja_presentes:
+			continue
+		_append_managed(slip, "earnings", row.componente, row.valor)
 
 
 def _modo_emprestimo(settings):
