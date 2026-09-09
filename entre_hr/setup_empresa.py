@@ -158,17 +158,23 @@ def _defaults_da_empresa(company, contas):
 def _estrutura_base(company):
 	"""Create + submit 'Base - <abbr>': one earning row, the 'Salario Base' component,
 	amount = formula `base` (HRMS resolves it to the SSA base on every slip). Taxable
-	so INSS/IRPS build on it; NOT payment-day dependent — absences are the hook's
-	separate 'Faltas' deduction, so prorating base here would deduct them twice.
+	so INSS/IRPS build on it, and `depends_on_payment_days` so HRMS prorates it for a
+	mid-month admission/termination (and any HRMS leave/attendance).
 
 	Deductions stay out of the structure: INSS, IRPS, Faltas, Emprestimo and
 	Adiantamento are appended by salary_slip_hooks at assembly time."""
+	_fixar_base_payment_days()
 	nome = nome_estrutura_base(company)
 	if frappe.db.exists("Salary Structure", nome):
 		return nome
 
 	componente = ensure_salary_component(
-		COMPONENTE_BASE, "Earning", amount_based_on_formula=1, formula="base", is_tax_applicable=1
+		COMPONENTE_BASE,
+		"Earning",
+		amount_based_on_formula=1,
+		formula="base",
+		is_tax_applicable=1,
+		depends_on_payment_days=1,
 	)
 	estrutura = frappe.new_doc("Salary Structure")
 	estrutura.name = nome
@@ -180,12 +186,39 @@ def _estrutura_base(company):
 		estrutura.currency = moeda
 	estrutura.append(
 		"earnings",
-		{"salary_component": componente, "amount_based_on_formula": 1, "formula": "base"},
+		{
+			"salary_component": componente,
+			"amount_based_on_formula": 1,
+			"formula": "base",
+			"depends_on_payment_days": 1,
+		},
 	)
 	estrutura.flags.ignore_permissions = True
 	estrutura.insert()
 	estrutura.submit()
 	return estrutura.name
+
+
+def _fixar_base_payment_days():
+	"""Ensure the base component and every 'Base - *' structure earning row are
+	payment-day dependent — for installs whose structure predates this."""
+	if not frappe.db.exists("Salary Component", COMPONENTE_BASE):
+		return
+	if not frappe.db.get_value("Salary Component", COMPONENTE_BASE, "depends_on_payment_days"):
+		frappe.db.set_value(
+			"Salary Component", COMPONENTE_BASE, "depends_on_payment_days", 1
+		)
+	linhas = frappe.get_all(
+		"Salary Detail",
+		filters={
+			"parenttype": "Salary Structure",
+			"salary_component": COMPONENTE_BASE,
+			"depends_on_payment_days": 0,
+		},
+		pluck="name",
+	)
+	for linha in linhas:
+		frappe.db.set_value("Salary Detail", linha, "depends_on_payment_days", 1)
 
 
 def _mapear_componentes(company, contas):
