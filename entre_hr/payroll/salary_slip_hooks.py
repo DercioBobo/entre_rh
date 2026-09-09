@@ -297,8 +297,9 @@ def _add_estatutarios(slip, settings, base):
 
 	Each is gated by its Settings flag; components are auto-created with the right
 	type on first use. The 13º earning is appended first so it is part of the taxable
-	base; INSS is then a percent of the taxable earnings and IRPS is computed on the
-	post-INSS taxable base. Formulas live in entre_hr.payroll.statutory."""
+	base; INSS and IRPS are then both computed on that gross taxable-earnings total (the
+	retenção-na-fonte table is applied directly, not net of INSS — see IRPS.txt).
+	Formulas live in entre_hr.payroll.statutory."""
 	if cint(settings.activo_13o_salario):
 		componente = ensure_salary_component(settings.componente_13o_salario, "Earning")
 		decimo_terceiro = calcular_13o(base, slip, settings)
@@ -317,7 +318,7 @@ def _add_estatutarios(slip, settings, base):
 		dependentes = cint(
 			frappe.db.get_value("Employee", slip.employee, "custom_numero_de_dependentes")
 		)
-		irps = calcular_irps(base_tributavel - inss, dependentes, settings)
+		irps = calcular_irps(base_tributavel, dependentes, settings)
 		_append_managed(slip, "deductions", componente, irps)
 
 

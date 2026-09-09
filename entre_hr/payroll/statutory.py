@@ -12,8 +12,10 @@ law) seeds Settings.inss_taxa_trabalhador at install; the calculation reads Sett
 so a legal change is an edit there, not a deploy.
 
 IRPS: real monthly withholding table (retenção na fonte), per number of dependents,
-on the post-INSS taxable base. The calculation reads Settings.irps_tabela;
-TABELA_IRPS_OFICIAL below is the install-time seed.
+applied directly to the taxable earnings — GROSS, before INSS (the retenção-na-fonte
+table already bakes in the standard deductions; see IRPS.txt and Simulador de
+Salario.html). The calculation reads Settings.irps_tabela; TABELA_IRPS_OFICIAL below
+is the install-time seed.
 
 13º Salário: one full base salary on the slip of the configured payment month
 (Settings.mes_13o_salario, seeded to Dezembro), subject to INSS and IRPS like any
@@ -86,8 +88,9 @@ def calcular_inss(base_tributavel, settings):
 	return flt(base_tributavel) * taxa / 100.0
 
 
-def calcular_irps(base_pos_inss, dependentes, settings):
-	"""IRPS monthly withholding on the post-INSS base, per number of dependents.
+def calcular_irps(base_tributavel, dependentes, settings):
+	"""IRPS monthly withholding on the taxable earnings (gross, before INSS), per
+	number of dependents.
 
 	Reads Settings.irps_tabela (seeded from TABELA_IRPS_OFICIAL): within the rows for
 	`min(dependentes, 4)`, applies `parcela_fixa + taxa% × (base − limite_inferior)`
@@ -95,7 +98,7 @@ def calcular_irps(base_pos_inss, dependentes, settings):
 	only makes the 0.01 gaps between published brackets harmless. 0 below the first
 	bracket or when the table is empty.
 	"""
-	base = flt(base_pos_inss)
+	base = flt(base_tributavel)
 	grupo = min(max(cint(dependentes), 0), MAX_DEPENDENTES)
 	escalao = None
 	for row in settings.irps_tabela or []:

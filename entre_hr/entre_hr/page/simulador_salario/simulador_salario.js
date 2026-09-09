@@ -1,7 +1,7 @@
 // Simulador de Salário — desk page.
 // Statutory parameters come from entre_hr.simulador.parametros (Entre HR Settings),
-// so the simulator always matches payroll: INSS on taxable earnings, IRPS on the
-// post-INSS base, per-dependents brackets. Works for employees (data pulled from
+// so the simulator always matches payroll: INSS and IRPS both on the gross taxable
+// earnings, per-dependents brackets. Works for employees (data pulled from
 // Employee/SSA) and non-employees (typed manually).
 
 frappe.pages["simulador-salario"].on_page_load = function (wrapper) {
@@ -61,16 +61,16 @@ entre_hr_simulador.Simulador = class {
 		};
 	}
 
-	// Same semantics as payroll: INSS on the taxable total; IRPS on the post-INSS
-	// base. Bónus marked "tributável" join the taxable base; the rest only add to
-	// gross/net.
+	// Same semantics as payroll: INSS and IRPS are both on the gross taxable total
+	// (the retenção-na-fonte table is applied directly, not net of INSS). Bónus
+	// marked "tributável" join the taxable base; the rest only add to gross/net.
 	calcular(base, dependentes, bonus) {
 		base = flt(base);
 		const trib_bonus = (bonus || []).filter((b) => b.tributavel).reduce((s, b) => s + flt(b.valor), 0);
 		const isento = (bonus || []).filter((b) => !b.tributavel).reduce((s, b) => s + flt(b.valor), 0);
 		const tributavel = base + trib_bonus;
 		const inss = (tributavel * flt(this.params.taxa_inss)) / 100;
-		const irps = this.calc_irps(tributavel - inss, dependentes);
+		const irps = this.calc_irps(tributavel, dependentes);
 		return {
 			base: base,
 			bonus_total: trib_bonus + isento,

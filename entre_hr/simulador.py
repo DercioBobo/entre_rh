@@ -3,7 +3,7 @@
 The page mirrors the statutory math client-side for instant feedback, but every
 parameter comes from Entre HR Settings via `parametros()` — a legal change edited
 in Settings updates the simulator with no deploy, and the semantics match payroll
-(INSS on taxable earnings, IRPS on the post-INSS base).
+(INSS and IRPS both on the gross taxable earnings).
 """
 
 import frappe
