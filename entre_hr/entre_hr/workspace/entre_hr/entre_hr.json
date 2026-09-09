@@ -42,7 +42,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "Folha de Pagamento",
-   "link_count": 4,
+   "link_count": 5,
    "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
@@ -84,6 +84,16 @@
    "link_count": 0,
    "link_to": "Salary Component",
    "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Resumo da Folha",
+   "link_count": 0,
+   "link_to": "Resumo da Folha",
+   "link_type": "Report",
    "onboard": 0,
    "type": "Link"
   },
@@ -234,7 +244,7 @@
    "type": "Link"
   }
  ],
- "modified": "2026-09-09 12:00:00.000000",
+ "modified": "2026-09-09 13:00:00.000000",
  "modified_by": "Administrator",
  "module": "Entre HR",
  "name": "Entre HR",
