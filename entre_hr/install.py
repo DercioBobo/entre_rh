@@ -1,5 +1,5 @@
 import frappe
-from frappe.utils import flt
+from frappe.utils import cint, flt
 
 ROLES = ["Aprovador RH", "RH Manager"]
 
@@ -98,6 +98,15 @@ def seed_padroes():
 		if not settings.get(campo):
 			settings.set(campo, ensure_salary_component(nome, tipo))
 			mudou = True
+
+	# Payroll auto-assembly on by default. Re-enabled only while it has never run —
+	# once a managed row has been produced, its off-state is a deliberate operator
+	# choice and is left alone (same "seed once" rule as the statutory flags).
+	if not cint(settings.get("folha_activo")) and not frappe.db.exists(
+		"Salary Detail", {"custom_origem_entre_hr": "entre_hr"}
+	):
+		settings.folha_activo = 1
+		mudou = True
 
 	if not settings.get("metodo_emprestimo"):
 		settings.metodo_emprestimo = "Saldo Devedor"
