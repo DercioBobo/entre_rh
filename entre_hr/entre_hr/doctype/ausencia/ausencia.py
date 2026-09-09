@@ -3,7 +3,12 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import cint, formatdate, getdate
 
-from entre_hr.utils import MESES, mes_ano_para_periodo, validar_mes_nao_passado
+from entre_hr.utils import (
+	MESES,
+	herdar_empresa,
+	mes_ano_para_periodo,
+	validar_mes_nao_passado,
+)
 
 
 def modo_registo_faltas():
@@ -21,6 +26,7 @@ class Ausencia(Document):
 	so HR can register incrementally; payroll SUMs them (utils.calcular_faltas)."""
 
 	def validate(self):
+		herdar_empresa(self)
 		self._derivar_periodo()
 		validar_mes_nao_passado(self)
 		self._validar_registo()

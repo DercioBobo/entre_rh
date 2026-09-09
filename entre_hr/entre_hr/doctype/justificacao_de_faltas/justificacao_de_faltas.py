@@ -3,11 +3,12 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import cint
 
-from entre_hr.utils import mes_ano_para_periodo
+from entre_hr.utils import herdar_empresa, mes_ano_para_periodo
 
 
 class JustificacaoDeFaltas(Document):
 	def validate(self):
+		herdar_empresa(self)
 		self._validar_dias()
 
 	def _validar_dias(self):

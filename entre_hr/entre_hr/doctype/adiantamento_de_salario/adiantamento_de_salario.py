@@ -4,7 +4,7 @@ from frappe.model.document import Document
 from frappe.utils import flt
 
 from entre_hr.salario import base_para_data, get_settings
-from entre_hr.utils import ADIANTAMENTO_PERCENTAGEM_PADRAO
+from entre_hr.utils import ADIANTAMENTO_PERCENTAGEM_PADRAO, herdar_empresa
 
 
 class AdiantamentoDeSalario(Document):
@@ -16,6 +16,7 @@ class AdiantamentoDeSalario(Document):
 	blank/0 setting falls back to ADIANTAMENTO_PERCENTAGEM_PADRAO."""
 
 	def validate(self):
+		herdar_empresa(self)
 		if flt(self.valor) <= 0:
 			frappe.throw(_("Valor deve ser maior que zero."))
 		self._validar_limite()

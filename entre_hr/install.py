@@ -8,12 +8,14 @@ def after_install():
 	ensure_roles()
 	seed_padroes()
 	backfill_idades()
+	backfill_empresa()
 
 
 def after_migrate():
 	ensure_roles()
 	seed_padroes()
 	backfill_idades()
+	backfill_empresa()
 
 
 def backfill_idades():
@@ -22,6 +24,35 @@ def backfill_idades():
 	from entre_hr.utils import actualizar_idades
 
 	actualizar_idades()
+
+
+# Employee-primary doctypes that carry a denormalized `company` (fetched from the
+# employee) for filtering, reports and per-company User Permissions.
+DOCTYPES_COM_EMPRESA = (
+	"Ausencia",
+	"Justificacao De Faltas",
+	"Emprestimo",
+	"Outras Deducoes",
+	"Outras Remuneracoes",
+	"Adiantamento De Salario",
+	"Reclamacao De Salario",
+)
+
+
+def backfill_empresa():
+	"""Stamp `company` on rows created before the field existed. No-op once filled."""
+	for doctype in DOCTYPES_COM_EMPRESA:
+		rows = frappe.get_all(
+			doctype,
+			filters={"company": ["in", ("", None)], "funcionario": ["is", "set"]},
+			fields=["name", "funcionario"],
+		)
+		for row in rows:
+			empresa = frappe.db.get_value("Employee", row.funcionario, "company")
+			if empresa:
+				frappe.db.set_value(
+					doctype, row.name, "company", empresa, update_modified=False
+				)
 
 
 def ensure_roles():

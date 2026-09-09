@@ -57,6 +57,15 @@ def nome_estrutura_base(company):
 	return f"Base - {abbr}"
 
 
+def herdar_empresa(doc):
+	"""Employee-primary doctypes carry a read-only `company` fetched from the
+	employee. `fetch_from` handles the desk; this stamps it server-side too, so
+	records created via API/scripts and older rows stay consistent. Call from
+	validate()."""
+	if doc.get("funcionario"):
+		doc.company = frappe.db.get_value("Employee", doc.funcionario, "company")
+
+
 def ensure_salary_component(nome, tipo, **campos):
 	"""Return the component name, auto-creating it with the given type ('Earning' /
 	'Deduction') on first use. Returns None when no name is configured.

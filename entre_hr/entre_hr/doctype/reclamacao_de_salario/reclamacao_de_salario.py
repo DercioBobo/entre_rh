@@ -3,11 +3,12 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt
 
-from entre_hr.utils import mes_ano_para_periodo
+from entre_hr.utils import herdar_empresa, mes_ano_para_periodo
 
 
 class ReclamacaoDeSalario(Document):
 	def validate(self):
+		herdar_empresa(self)
 		if flt(self.valor_reclamado) <= 0:
 			frappe.throw(_("Valor Reclamado deve ser maior que zero."))
 		self._resolver_recibo_referencia()

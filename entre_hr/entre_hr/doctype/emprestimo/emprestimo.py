@@ -4,10 +4,12 @@ from frappe.model.document import Document
 from frappe.utils import add_months, cint, flt, get_last_day, getdate
 
 from entre_hr.salario import base_para_data
+from entre_hr.utils import herdar_empresa
 
 
 class Emprestimo(Document):
 	def validate(self):
+		herdar_empresa(self)
 		self._validar_valores()
 		self._derivar_campos()
 		self._avisar_limite()

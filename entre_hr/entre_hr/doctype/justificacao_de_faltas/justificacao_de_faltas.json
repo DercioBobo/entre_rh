@@ -8,6 +8,7 @@
   "naming_series",
   "funcionario",
   "funcionario_nome",
+  "company",
   "column_break_1",
   "mes",
   "ano",
@@ -41,6 +42,15 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Nome do Funcionário",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "funcionario.company",
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Empresa",
+   "options": "Company",
    "read_only": 1
   },
   {
@@ -96,7 +106,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-07-02 00:00:00.000000",
+ "modified": "2026-09-09 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Entre HR",
  "name": "Justificacao De Faltas",
