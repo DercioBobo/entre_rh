@@ -102,15 +102,49 @@ def _lancar_ledger(allocation_name, employee, company, leave_type, leaves, data,
 
 
 def _ajustar_total_alocado(allocation_name, delta):
-	"""Mirror the display field on the allocation (net allocated = accruals − expiries)."""
-	atual = flt(frappe.db.get_value("Leave Allocation", allocation_name, "total_leaves_allocated"))
-	frappe.db.set_value(
-		"Leave Allocation",
-		allocation_name,
-		"total_leaves_allocated",
-		atual + delta,
-		update_modified=False,
-	)
+	"""Mirror BOTH display fields on the allocation (net allocated = accruals − expiries).
+
+	We move `new_leaves_allocated` as well as `total_leaves_allocated` by the same delta
+	so that if an operator ever re-saves or amends the Leave Allocation, HRMS's
+	`total_leaves_allocated = new_leaves_allocated + unused` recompute lands on the same
+	number instead of collapsing every accrual back to the first month. The Leave Ledger
+	Entries stay the real source of truth (`saldo_ferias`); these fields are the mirror.
+	"""
+	for campo in ("new_leaves_allocated", "total_leaves_allocated"):
+		atual = flt(frappe.db.get_value("Leave Allocation", allocation_name, campo))
+		frappe.db.set_value(
+			"Leave Allocation", allocation_name, campo, atual + delta, update_modified=False
+		)
+
+
+def _registar_log(
+	employee, company, leave_type, allocation_name, accao, dias, saldo, mes_ref=None, obs=None
+):
+	"""Write one audit row (Acumulacao Ferias Log) for an automatic accrual action.
+
+	Non-fatal: the ledger is the source of truth, so a logging failure must never roll
+	back an accrual — it is reported to the Error Log and the run continues.
+	"""
+	try:
+		frappe.get_doc(
+			{
+				"doctype": "Acumulacao Ferias Log",
+				"funcionario": employee,
+				"company": company,
+				"leave_type": leave_type,
+				"leave_allocation": allocation_name,
+				"data": today(),
+				"accao": accao,
+				"dias": dias,
+				"saldo_resultante": saldo,
+				"mes_referencia": mes_ref,
+				"observacoes": obs,
+			}
+		).insert(ignore_permissions=True)
+	except Exception:
+		frappe.log_error(
+			frappe.get_traceback(), f"Entre HR: registo de log de férias falhou para {employee}"
+		)
 
 
 def _trim_excesso(employee, company, leave_type, allocation_name, cap, data):
@@ -121,6 +155,17 @@ def _trim_excesso(employee, company, leave_type, allocation_name, cap, data):
 			allocation_name, employee, company, leave_type, -excesso, data, is_expired=1
 		)
 		_ajustar_total_alocado(allocation_name, -excesso)
+		_registar_log(
+			employee,
+			company,
+			leave_type,
+			allocation_name,
+			"Expiração",
+			-excesso,
+			saldo_ferias(employee, leave_type),
+			mes_ref=data,
+			obs=_("Excesso acima do limite de {0} dias no aniversário de admissão.").format(cint(cap)),
+		)
 	return max(excesso, 0)
 
 
@@ -167,10 +212,28 @@ def acumular_funcionario(emp, hoje=None):
 		rate = 1.0 if n < 12 else 2.5
 
 		if not alloc:
+			# Duplicate-allocation guard: never create a second Leave Allocation for this
+			# employee + leave type. If a non-cancelled one exists that is not our rolling
+			# container (get_rolling_allocation filters to_date = FAR_HORIZON), HRMS would
+			# sum both totals and inflate the balance — stop and flag it for a human.
+			conflito = frappe.db.exists(
+				"Leave Allocation",
+				{"employee": emp.name, "leave_type": leave_type, "docstatus": ["<", 2]},
+			)
+			if conflito:
+				frappe.log_error(
+					f"{emp.name}: existe uma Leave Allocation ({conflito}) para «{leave_type}» "
+					f"que não é a alocação rolante do Entre HR (to_date {FAR_HORIZON}). "
+					f"Acumulação de férias ignorada para não criar duplicados — resolva manualmente.",
+					"Entre HR: alocação de férias em conflito",
+				)
+				break
 			alloc = _criar_alocacao(emp.name, emp.company, leave_type, anchor, rate)
+			accao = "Criação"
 		else:
 			_lancar_ledger(alloc.name, emp.name, emp.company, leave_type, rate, proxima)
 			_ajustar_total_alocado(alloc.name, rate)
+			accao = "Acumulação"
 
 		n += 1
 		acumulado += rate
@@ -180,6 +243,16 @@ def acumular_funcionario(emp, hoje=None):
 			"custom_ultima_acumulacao_ferias",
 			proxima,
 			update_modified=False,
+		)
+		_registar_log(
+			emp.name,
+			emp.company,
+			leave_type,
+			alloc.name,
+			accao,
+			rate,
+			saldo_ferias(emp.name, leave_type),
+			mes_ref=proxima,
 		)
 
 		# Admission anniversary: expire the excess above the cap.
@@ -315,7 +388,20 @@ def backfill_ferias(user=None):
 			seed = max(saldo - usados, 0.0)
 
 			if seed > 0:
-				_criar_alocacao(emp.name, emp.company, leave_type, anchor, seed)
+				alloc = _criar_alocacao(emp.name, emp.company, leave_type, anchor, seed)
+				_registar_log(
+					emp.name,
+					emp.company,
+					leave_type,
+					alloc.name,
+					"Backfill",
+					seed,
+					saldo_ferias(emp.name, leave_type),
+					mes_ref=add_months(anchor, n),
+					obs=_("Antiguidade {0} meses · acumulado teórico {1} · usados {2}.").format(
+						n, saldo, usados
+					),
+				)
 
 			# Plant the marker so the scheduler continues from the last completed month.
 			frappe.db.set_value(

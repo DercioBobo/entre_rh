@@ -1,0 +1,180 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2026-09-10 12:00:00.000000",
+ "description": "Registo de auditoria da acumulação, criação e expiração automática de férias (entre_hr.ferias). Escrito pelo sistema; só leitura.",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "funcionario",
+  "funcionario_nome",
+  "company",
+  "column_break_1",
+  "data",
+  "accao",
+  "mes_referencia",
+  "section_valores",
+  "dias",
+  "saldo_resultante",
+  "column_break_2",
+  "leave_type",
+  "leave_allocation",
+  "section_obs",
+  "observacoes"
+ ],
+ "fields": [
+  {
+   "default": "AFL-.YY.-.#####",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Série",
+   "options": "AFL-.YY.-.#####"
+  },
+  {
+   "fieldname": "funcionario",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Funcionário",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "funcionario.employee_name",
+   "fieldname": "funcionario_nome",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Nome do Funcionário",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "funcionario.company",
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Empresa",
+   "options": "Company",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "data",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Data",
+   "reqd": 1
+  },
+  {
+   "fieldname": "accao",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Acção",
+   "options": "Criação\nAcumulação\nExpiração\nBackfill",
+   "reqd": 1
+  },
+  {
+   "description": "Fronteira do mês acumulado (aniversário de admissão + N meses).",
+   "fieldname": "mes_referencia",
+   "fieldtype": "Date",
+   "label": "Mês de Referência"
+  },
+  {
+   "fieldname": "section_valores",
+   "fieldtype": "Section Break"
+  },
+  {
+   "description": "Dias movimentados nesta acção (positivo = acumulado, negativo = expirado).",
+   "fieldname": "dias",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Dias",
+   "precision": "2"
+  },
+  {
+   "description": "Saldo de férias (SUM dos Leave Ledger Entries) logo após esta acção.",
+   "fieldname": "saldo_resultante",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Saldo Resultante",
+   "precision": "2"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "leave_type",
+   "fieldtype": "Link",
+   "label": "Tipo de Licença",
+   "options": "Leave Type",
+   "read_only": 1
+  },
+  {
+   "fieldname": "leave_allocation",
+   "fieldtype": "Link",
+   "label": "Alocação de Licença",
+   "options": "Leave Allocation",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_obs",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "observacoes",
+   "fieldtype": "Small Text",
+   "label": "Observações"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-09-10 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Entre HR",
+ "name": "Acumulacao Ferias Log",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "RH Manager",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Aprovador RH"
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "funcionario_nome",
+ "track_changes": 0
+}
