@@ -426,6 +426,180 @@ frappe.listview_settings["Ausencia"] = {
 	},
 };
 
+// --- Horas Extras: registo em massa ---------------------------------------------
+// One dialog, many employees: pick mês/ano, type "horas a 50%" and/or "horas a
+// 100%" only where needed, one click creates the individual Horas Extras documents.
+
+frappe.provide("entre_hr.horas_extras");
+
+entre_hr.horas_extras.abrir = function (listview) {
+	const hoje = new Date();
+	const dialogo = new frappe.ui.Dialog({
+		title: __("Registar Horas Extras em Massa"),
+		size: "large",
+		fields: [
+			{
+				fieldname: "mes",
+				fieldtype: "Select",
+				label: __("Mês"),
+				options: entre_hr.periodo.MESES.join("\n"),
+				default: entre_hr.periodo.MESES[hoje.getMonth()],
+				reqd: 1,
+				onchange: () => entre_hr.horas_extras.carregar(dialogo),
+			},
+			{ fieldname: "col_1", fieldtype: "Column Break" },
+			{
+				fieldname: "ano",
+				fieldtype: "Int",
+				label: __("Ano"),
+				default: hoje.getFullYear(),
+				reqd: 1,
+				onchange: () => entre_hr.horas_extras.carregar(dialogo),
+			},
+			{ fieldname: "col_2", fieldtype: "Column Break" },
+			{
+				fieldname: "submeter",
+				fieldtype: "Check",
+				label: __("Submeter imediatamente"),
+				default: 0,
+				description: __("Sem passar pelo fluxo de aprovação."),
+			},
+			{ fieldname: "sec_1", fieldtype: "Section Break" },
+			{ fieldname: "grelha", fieldtype: "HTML" },
+		],
+		primary_action_label: __("Criar Registos"),
+		primary_action: () => entre_hr.horas_extras.criar(dialogo, listview),
+	});
+	dialogo.show();
+	entre_hr.horas_extras.carregar(dialogo);
+};
+
+entre_hr.horas_extras.carregar = function (dialogo) {
+	const mes = dialogo.get_value("mes");
+	const ano = cint(dialogo.get_value("ano"));
+	if (!mes || !ano) return;
+	dialogo.fields_dict.grelha.$wrapper.html(
+		`<div class="text-muted">${__("A carregar...")}</div>`
+	);
+	frappe.call({
+		method: "entre_hr.horas_extras.dados_registo_massa",
+		args: { mes: mes, ano: ano },
+		callback: (r) => entre_hr.horas_extras.render(dialogo, r.message || {}),
+	});
+};
+
+entre_hr.horas_extras.render = function (dialogo, dados) {
+	const wrapper = dialogo.fields_dict.grelha.$wrapper;
+	const funcionarios = dados.funcionarios || [];
+	if (!funcionarios.length) {
+		wrapper.html(`<div class="text-muted">${__("Sem funcionários activos.")}</div>`);
+		return;
+	}
+	const esc = frappe.utils.escape_html;
+	const th = 'style="position:sticky;top:0;background:var(--card-bg);z-index:1"';
+	const linhas = funcionarios
+		.map((f) => {
+			let estado = "";
+			if (f.existente) {
+				estado = `<span class="indicator-pill blue">${flt(f.existente.horas_50)}h @50% · ${flt(f.existente.horas_100)}h @100%</span> <small class="text-muted">${cint(f.existente.registos)} ${__("registo(s)")}</small>`;
+			}
+			const texto = `${f.employee_name || ""} ${f.name} ${f.department || ""}`.toLowerCase();
+			return `<tr class="linha-funcionario" data-texto="${esc(texto)}">
+				<td>${esc(f.employee_name || f.name)}<br><small class="text-muted">${esc(f.name)}${f.department ? " · " + esc(f.department) : ""}</small></td>
+				<td>${estado}</td>
+				<td style="text-align:right"><input type="number" class="form-control input-h50" style="width:90px;margin-left:auto" min="0" step="0.5" data-funcionario="${esc(f.name)}"></td>
+				<td style="text-align:right"><input type="number" class="form-control input-h100" style="width:90px;margin-left:auto" min="0" step="0.5" data-funcionario="${esc(f.name)}"></td>
+			</tr>`;
+		})
+		.join("");
+	wrapper.html(`
+		<input type="text" class="form-control procura" placeholder="${__("Procurar funcionário...")}" style="margin-bottom:10px">
+		<div style="max-height:45vh;overflow-y:auto;border:1px solid var(--border-color);border-radius:8px">
+			<table class="table table-sm" style="margin:0">
+				<thead>
+					<tr>
+						<th ${th}>${__("Funcionário")}</th>
+						<th ${th}>${__("Já registado no mês")}</th>
+						<th ${th} style="text-align:right">${__("Horas a 50%")}</th>
+						<th ${th} style="text-align:right">${__("Horas a 100%")}</th>
+					</tr>
+				</thead>
+				<tbody>${linhas}</tbody>
+			</table>
+		</div>
+		<p class="resumo text-muted" style="margin-top:8px"></p>`);
+
+	const actualizar_resumo = () => {
+		let com_horas = 0;
+		let total = 0;
+		wrapper.find(".linha-funcionario").each(function () {
+			const h = flt($(this).find(".input-h50").val()) + flt($(this).find(".input-h100").val());
+			if (h > 0) {
+				com_horas++;
+				total += h;
+			}
+		});
+		wrapper
+			.find(".resumo")
+			.text(
+				com_horas
+					? __("{0} funcionário(s) · {1}h a registar", [com_horas, total])
+					: __("Introduza as horas apenas nos funcionários que fizeram horas extras.")
+			);
+	};
+	wrapper.find(".input-h50, .input-h100").on("input", actualizar_resumo);
+	actualizar_resumo();
+
+	wrapper.find(".procura").on("input", function () {
+		const termo = ($(this).val() || "").toLowerCase();
+		wrapper.find(".linha-funcionario").each(function () {
+			$(this).toggle(!termo || $(this).data("texto").includes(termo));
+		});
+	});
+};
+
+entre_hr.horas_extras.criar = function (dialogo, listview) {
+	const horas = {};
+	dialogo.fields_dict.grelha.$wrapper.find(".linha-funcionario").each(function () {
+		const h50 = flt($(this).find(".input-h50").val());
+		const h100 = flt($(this).find(".input-h100").val());
+		if (h50 > 0 || h100 > 0) {
+			horas[$(this).find(".input-h50").attr("data-funcionario")] = { h50, h100 };
+		}
+	});
+	if (!Object.keys(horas).length) {
+		frappe.msgprint(__("Introduza as horas de pelo menos um funcionário."));
+		return;
+	}
+	frappe.call({
+		method: "entre_hr.horas_extras.registar_massa",
+		args: {
+			mes: dialogo.get_value("mes"),
+			ano: cint(dialogo.get_value("ano")),
+			horas: horas,
+			submeter: cint(dialogo.get_value("submeter")),
+		},
+		freeze: true,
+		freeze_message: __("A criar registos de horas extras..."),
+		callback(r) {
+			const resultado = r.message || {};
+			dialogo.hide();
+			frappe.msgprint(
+				__("Criados {0} registo(s) de horas extras.", [(resultado.criadas || []).length])
+			);
+			listview && listview.refresh();
+		},
+	});
+};
+
+frappe.listview_settings["Horas Extras"] = {
+	onload(listview) {
+		listview.page.add_inner_button(__("Registar em Massa"), () =>
+			entre_hr.horas_extras.abrir(listview)
+		);
+	},
+};
+
 // --- Form registrations --------------------------------------------------------
 
 frappe.ui.form.on("Outras Deducoes", entre_hr.periodo.eventos());

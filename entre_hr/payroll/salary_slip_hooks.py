@@ -17,7 +17,12 @@ from frappe.utils import cint, flt, get_last_day, getdate
 
 from entre_hr.payroll.statutory import calcular_13o, calcular_inss, calcular_irps
 from entre_hr.salario import base_para_data
-from entre_hr.utils import calcular_faltas, ensure_salary_component, prestacao_do_mes
+from entre_hr.utils import (
+	MESES,
+	calcular_faltas,
+	ensure_salary_component,
+	prestacao_do_mes,
+)
 
 ORIGEM = "entre_hr"
 
@@ -74,6 +79,7 @@ def _assemble(slip):
 	_add_deducoes(slip)
 	_add_remuneracoes(slip)
 	_add_subsidios_fixos(slip)
+	_add_horas_extras(slip, settings, base)
 	_add_emprestimos(slip, settings)
 	_add_reclamacoes(slip, settings)
 	_add_adiantamentos(slip, settings)
@@ -195,6 +201,41 @@ def _add_remuneracoes(slip):
 		)
 	for componente, amount in por_componente.items():
 		_append_managed(slip, "earnings", componente, amount)
+
+
+HE_MULT = {"horas_50": 1.5, "horas_100": 2.0}
+
+
+def _add_horas_extras(slip, settings, base):
+	"""Horas Extras: submitted records for the slip's month, summed per tier. Amount =
+	(base ÷ he_horas_mensais) × horas × tier multiplier (1.5 at 50%, 2.0 at 100%).
+	Runs with the other earnings so a taxable component reaches the INSS/IRPS base."""
+	comp = {
+		"horas_50": settings.get("componente_horas_extras_50"),
+		"horas_100": settings.get("componente_horas_extras_100"),
+	}
+	if not any(comp.values()):
+		return
+	horas_mensais = flt(settings.get("he_horas_mensais")) or 240.0
+	if horas_mensais <= 0:
+		return
+	mes = getdate(slip.start_date)
+	rows = frappe.get_all(
+		"Horas Extras",
+		filters={
+			"funcionario": slip.employee,
+			"docstatus": 1,
+			"mes": MESES[mes.month - 1],
+			"ano": mes.year,
+		},
+		fields=["horas_50", "horas_100"],
+	)
+	if not rows:
+		return
+	taxa = flt(base) / horas_mensais
+	for campo, componente in comp.items():
+		horas = sum(flt(r.get(campo)) for r in rows)
+		_append_managed(slip, "earnings", componente, taxa * horas * HE_MULT[campo])
 
 
 def _add_subsidios_fixos(slip):

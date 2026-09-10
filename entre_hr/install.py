@@ -71,6 +71,8 @@ COMPONENTES_PADRAO = [
 	("componente_faltas", "Faltas", "Deduction"),
 	("componente_retroativo", "Retroativo", "Earning"),
 	("componente_emprestimo", "Emprestimo", "Deduction"),
+	("componente_horas_extras_50", "Horas Extras 50%", "Earning"),
+	("componente_horas_extras_100", "Horas Extras 100%", "Earning"),
 ]
 
 def seed_padroes():
@@ -114,6 +116,10 @@ def seed_padroes():
 
 	if not settings.get("modo_registo_faltas"):
 		settings.modo_registo_faltas = "Por Dias"
+		mudou = True
+
+	if not flt(settings.get("he_horas_mensais")):
+		settings.he_horas_mensais = 240
 		mudou = True
 
 	if not settings.get("componente_adiantamento"):

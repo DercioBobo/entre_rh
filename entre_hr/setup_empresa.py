@@ -230,6 +230,8 @@ def _mapear_componentes(company, contas):
 		COMPONENTE_BASE: contas["salarios"],
 		settings.get("componente_retroativo"): contas["salarios"],
 		settings.get("componente_13o_salario"): contas["salarios"],
+		settings.get("componente_horas_extras_50"): contas["salarios"],
+		settings.get("componente_horas_extras_100"): contas["salarios"],
 		settings.get("componente_faltas"): contas["salarios"],
 		settings.get("componente_proporcional"): contas["salarios"],
 		settings.get("componente_inss"): contas["inss"],

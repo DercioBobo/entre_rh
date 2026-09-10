@@ -40,7 +40,11 @@
   "decimo_terceiro_section",
   "activo_13o_salario",
   "componente_13o_salario",
-  "mes_13o_salario"
+  "mes_13o_salario",
+  "horas_extras_section",
+  "he_horas_mensais",
+  "componente_horas_extras_50",
+  "componente_horas_extras_100"
  ],
  "fields": [
   {
@@ -288,12 +292,40 @@
    "label": "Mês de Pagamento do 13º",
    "options": "Janeiro\nFevereiro\nMarço\nAbril\nMaio\nJunho\nJulho\nAgosto\nSetembro\nOutubro\nNovembro\nDezembro",
    "description": "O 13º (um salário base completo) entra na folha deste mês. Preenchido automaticamente na instalação com Dezembro."
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "horas_extras_section",
+   "fieldtype": "Section Break",
+   "label": "Horas Extras"
+  },
+  {
+   "default": "240",
+   "fieldname": "he_horas_mensais",
+   "fieldtype": "Float",
+   "label": "Horas Mensais (divisor da taxa horária)",
+   "precision": "2",
+   "description": "Taxa horária = salário base ÷ este valor. 240 = 30 dias × 8h (convenção usada). Fixo, não varia com o mês. Preenchido automaticamente na instalação."
+  },
+  {
+   "fieldname": "componente_horas_extras_50",
+   "fieldtype": "Link",
+   "label": "Componente Horas Extras 50%",
+   "options": "Salary Component",
+   "description": "Sugerido: \"Horas Extras 50%\". Preenchido automaticamente na instalação."
+  },
+  {
+   "fieldname": "componente_horas_extras_100",
+   "fieldtype": "Link",
+   "label": "Componente Horas Extras 100%",
+   "options": "Salary Component",
+   "description": "Sugerido: \"Horas Extras 100%\". Preenchido automaticamente na instalação."
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-07-02 00:00:00.000000",
+ "modified": "2026-09-09 14:00:00.000000",
  "modified_by": "Administrator",
  "module": "Entre HR",
  "name": "Entre HR Settings",
