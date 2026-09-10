@@ -190,7 +190,7 @@
    "fieldtype": "Link",
    "label": "Componente Adiantamento",
    "options": "Salary Component",
-   "description": "Sugerido: \"Adiantamento de Salario\". Preenchido automaticamente na instalação."
+   "description": "Sugerido: \"Adiantamento de Salario\"."
   },
   {
    "default": "50",
@@ -305,21 +305,21 @@
    "fieldtype": "Float",
    "label": "Horas Mensais (divisor da taxa horária)",
    "precision": "2",
-   "description": "Taxa horária = salário base ÷ este valor. 240 = 30 dias × 8h (convenção usada). Fixo, não varia com o mês. Preenchido automaticamente na instalação."
+   "description": "Taxa horária = salário base ÷ este valor. 240 = 30 dias × 8h (convenção usada). Fixo, não varia com o mês."
   },
   {
    "fieldname": "componente_horas_extras_50",
    "fieldtype": "Link",
    "label": "Componente Horas Extras 50%",
    "options": "Salary Component",
-   "description": "Sugerido: \"Horas Extras 50%\". Preenchido automaticamente na instalação."
+   "description": "Sugerido: \"Horas Extras 50%\"."
   },
   {
    "fieldname": "componente_horas_extras_100",
    "fieldtype": "Link",
    "label": "Componente Horas Extras 100%",
    "options": "Salary Component",
-   "description": "Sugerido: \"Horas Extras 100%\". Preenchido automaticamente na instalação."
+   "description": "Sugerido: \"Horas Extras 100%\"."
   }
  ],
  "index_web_pages_for_search": 1,
