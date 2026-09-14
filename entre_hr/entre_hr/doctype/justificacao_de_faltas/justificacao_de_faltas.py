@@ -54,6 +54,8 @@ class JustificacaoDeFaltas(Document):
 def faltas_disponiveis(funcionario, mes, ano):
 	"""Client-side lookup: faltas registadas and still-available-to-justify for the
 	given employee/period, so the form shows the real numbers before a value is typed."""
+	if not frappe.has_permission("Justificacao De Faltas", "read"):
+		frappe.throw(_("Sem permissão para consultar Faltas."), frappe.PermissionError)
 	filters = {"funcionario": funcionario, "mes": mes, "ano": ano}
 	registadas = soma_submetido("Ausencia", "n_de_faltas", filters)
 	justificados = soma_submetido("Justificacao De Faltas", "dias_justificados", filters)
