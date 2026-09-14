@@ -19,7 +19,7 @@ from entre_hr.payroll.statutory import calcular_13o, calcular_inss, calcular_irp
 from entre_hr.salario import base_para_data
 from entre_hr.utils import (
 	MESES,
-	calcular_faltas,
+	calcular_faltas_detalhado,
 	ensure_salary_component,
 	prestacao_do_mes,
 )
@@ -70,8 +70,14 @@ def _assemble(slip):
 	divisor = _divisor(settings, slip)
 	slip.custom_dias_de_trabalho = divisor
 
-	# 3. Net faltas in the slip period.
-	faltas = calcular_faltas(slip.employee, slip.start_date, slip.end_date)
+	# 3. Faltas in the slip period — registadas (recorded), justificadas (offset by a
+	# Justificacao De Faltas) and líquidas (what actually costs the employee).
+	faltas_registadas, faltas_justificadas, faltas = calcular_faltas_detalhado(
+		slip.employee, slip.start_date, slip.end_date
+	)
+	slip.custom_faltas_registadas = faltas_registadas
+	slip.custom_faltas_justificadas = faltas_justificadas
+	slip.custom_faltas_liquidas = faltas
 	slip.custom_dias_trabalhados = max(divisor - faltas, 0)
 
 	# 4. Managed components.

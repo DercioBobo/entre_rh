@@ -12,6 +12,8 @@
   "column_break_1",
   "mes",
   "ano",
+  "faltas_registadas",
+  "faltas_disponiveis",
   "dias_justificados",
   "section_motivo",
   "motivo",
@@ -73,6 +75,22 @@
    "in_standard_filter": 1,
    "label": "Ano",
    "reqd": 1
+  },
+  {
+   "fieldname": "faltas_registadas",
+   "fieldtype": "Int",
+   "label": "Faltas Registadas",
+   "read_only": 1,
+   "no_copy": 1,
+   "description": "Total de faltas (Ausência) submetidas para este funcionário neste mês."
+  },
+  {
+   "fieldname": "faltas_disponiveis",
+   "fieldtype": "Int",
+   "label": "Faltas por Justificar",
+   "read_only": 1,
+   "no_copy": 1,
+   "description": "Faltas registadas ainda não cobertas por outra justificação submetida."
   },
   {
    "fieldname": "dias_justificados",

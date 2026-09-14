@@ -7,7 +7,7 @@ from entre_hr.utils import (
 	MESES,
 	herdar_empresa,
 	mes_ano_para_periodo,
-	validar_mes_nao_passado,
+	validar_mes_nao_futuro,
 )
 
 
@@ -28,7 +28,7 @@ class Ausencia(Document):
 	def validate(self):
 		herdar_empresa(self)
 		self._derivar_periodo()
-		validar_mes_nao_passado(self)
+		validar_mes_nao_futuro(self)
 		self._validar_registo()
 		self._validar_total_do_mes()
 

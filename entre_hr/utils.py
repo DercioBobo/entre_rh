@@ -178,37 +178,48 @@ def prestacao_do_mes(row, data_referencia):
 	return flt(row.valor_mensal)
 
 
-def validar_mes_nao_passado(doc):
-	"""No-past-months rule (BUILD_PLAN Phase 4; reused by Outras Deducoes in Phase 6).
+def validar_mes_nao_futuro(doc, campo_mes="mes", campo_ano="ano"):
+	"""No-future-months rule (BUILD_PLAN Phase 4; reused across Ausencia, Horas Extras,
+	Outras Deducoes/Remuneracoes, Justificacao De Faltas and Reclamacao De Salario).
 
-	Valid: a month >= the current month in the current year, or January of next year
-	only while we are in December. Anything earlier is rejected. Fires only for new
-	records or when the month/year changes.
+	Valid: the current month or any past month — a record can never be dated for a
+	month that hasn't arrived yet. Fires only for new records or when the month/year
+	changes. `campo_mes`/`campo_ano` let callers whose fields aren't named mes/ano
+	(e.g. Reclamacao De Salario's mes_reclamacao/ano_reclamacao) reuse this as-is.
 	"""
-	if not (doc.is_new() or doc.has_value_changed("mes") or doc.has_value_changed("ano")):
+	if not (
+		doc.is_new()
+		or doc.has_value_changed(campo_mes)
+		or doc.has_value_changed(campo_ano)
+	):
 		return
 
 	hoje = getdate(today())
-	mes = mes_para_numero(doc.mes)
-	ano = cint(doc.ano)
+	mes_valor = doc.get(campo_mes)
+	ano_valor = doc.get(campo_ano)
+	mes = mes_para_numero(mes_valor)
+	ano = cint(ano_valor)
 
-	if ano == hoje.year and mes >= hoje.month:
-		return
-	if ano == hoje.year + 1 and mes == 1 and hoje.month == 12:
-		return
-
-	frappe.throw(
-		_("Mês inválido: {0} de {1} já passou (ou está demasiado no futuro). Apenas o mês corrente ou meses seguintes do ano corrente são permitidos — Janeiro do próximo ano apenas em Dezembro.").format(
-			doc.mes, ano
+	if (ano, mes) > (hoje.year, hoje.month):
+		frappe.throw(
+			_("Mês inválido: {0} de {1} ainda não chegou. Apenas o mês corrente ou meses anteriores são permitidos.").format(
+				mes_valor, ano
+			)
 		)
-	)
 
 
-def calcular_faltas(employee, start, end):
-	"""Net unjustified absence days for the employee in [start, end]:
-	SUM(Ausencia.n_de_faltas) − SUM(Justificacao De Faltas.dias_justificados), both sides
-	matched on the same employee, over submitted records whose month overlaps the period.
-	Clamped at 0."""
+def soma_submetido(doctype, campo, filters):
+	"""SUM(campo) over submitted (docstatus=1) rows of `doctype` matching `filters`."""
+	rows = frappe.get_all(doctype, filters={**filters, "docstatus": 1}, fields=[f"sum({campo}) as total"])
+	return cint(rows[0].total) if rows else 0
+
+
+def calcular_faltas_detalhado(employee, start, end):
+	"""(faltas registadas, faltas justificadas, faltas líquidas) for the employee in
+	[start, end]: registadas = SUM(Ausencia.n_de_faltas); justificadas =
+	SUM(Justificacao De Faltas.dias_justificados), capped at registadas (a justification
+	can never offset more than was actually recorded); líquidas = registadas −
+	justificadas. Both sums are over submitted records whose month overlaps the period."""
 	start, end = getdate(start), getdate(end)
 
 	def _soma(doctype, campo):
@@ -224,7 +235,6 @@ def calcular_faltas(employee, start, end):
 				total += cint(row.get(campo))
 		return total
 
-	faltas = _soma("Ausencia", "n_de_faltas") - _soma(
-		"Justificacao De Faltas", "dias_justificados"
-	)
-	return max(faltas, 0)
+	registadas = _soma("Ausencia", "n_de_faltas")
+	justificadas = min(_soma("Justificacao De Faltas", "dias_justificados"), registadas)
+	return registadas, justificadas, max(registadas - justificadas, 0)

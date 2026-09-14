@@ -4,7 +4,7 @@ from frappe.model.document import Document
 from frappe.utils import flt
 
 from entre_hr.salario import base_para_data
-from entre_hr.utils import herdar_empresa, mes_ano_para_periodo, validar_mes_nao_passado
+from entre_hr.utils import herdar_empresa, mes_ano_para_periodo, validar_mes_nao_futuro
 
 MULT_50 = 1.5
 MULT_100 = 2.0
@@ -18,7 +18,7 @@ class HorasExtras(Document):
 
 	def validate(self):
 		herdar_empresa(self)
-		validar_mes_nao_passado(self)
+		validar_mes_nao_futuro(self)
 		if flt(self.horas_50) < 0 or flt(self.horas_100) < 0:
 			frappe.throw(_("As horas não podem ser negativas."))
 		if flt(self.horas_50) == 0 and flt(self.horas_100) == 0:

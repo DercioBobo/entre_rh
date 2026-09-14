@@ -43,6 +43,9 @@ fixtures = [
                     "Employee-custom_idade",
                     "Salary Slip-custom_dias_de_trabalho",
                     "Salary Slip-custom_dias_trabalhados",
+                    "Salary Slip-custom_faltas_registadas",
+                    "Salary Slip-custom_faltas_justificadas",
+                    "Salary Slip-custom_faltas_liquidas",
                     "Salary Detail-custom_origem_entre_hr",
                 ],
             ]
