@@ -379,7 +379,12 @@ def _add_estatutarios(slip, settings, base):
 	type on first use. The 13º earning is appended first so it is part of the taxable
 	base; INSS and IRPS are then both computed on that gross taxable-earnings total (the
 	retenção-na-fonte table is applied directly, not net of INSS — see IRPS.txt).
-	Formulas live in entre_hr.payroll.statutory."""
+	Formulas live in entre_hr.payroll.statutory.
+
+	A per-employee legal exemption (`custom_isento_inss` / `custom_isento_irps` on
+	Employee — e.g. a foreigner covered by their home country's social security) skips
+	that one component for that employee, without touching the Settings-level flag
+	that keeps INSS/IRPS mandatory for everyone else."""
 	if cint(settings.activo_13o_salario):
 		componente = ensure_salary_component(settings.componente_13o_salario, "Earning")
 		decimo_terceiro = calcular_13o(base, slip, settings)
@@ -387,17 +392,22 @@ def _add_estatutarios(slip, settings, base):
 
 	base_tributavel = _earnings_tributaveis(slip)
 
+	funcionario = frappe.db.get_value(
+		"Employee",
+		slip.employee,
+		["custom_isento_inss", "custom_isento_irps", "custom_numero_de_dependentes"],
+		as_dict=True,
+	)
+
 	inss = 0.0
-	if cint(settings.activo_inss):
+	if cint(settings.activo_inss) and not cint(funcionario.custom_isento_inss):
 		componente = ensure_salary_component(settings.componente_inss, "Deduction")
 		inss = calcular_inss(base_tributavel, settings)
 		_append_managed(slip, "deductions", componente, inss)
 
-	if cint(settings.activo_irps):
+	if cint(settings.activo_irps) and not cint(funcionario.custom_isento_irps):
 		componente = ensure_salary_component(settings.componente_irps, "Deduction")
-		dependentes = cint(
-			frappe.db.get_value("Employee", slip.employee, "custom_numero_de_dependentes")
-		)
+		dependentes = cint(funcionario.custom_numero_de_dependentes)
 		irps = calcular_irps(base_tributavel, dependentes, settings)
 		_append_managed(slip, "deductions", componente, irps)
 
