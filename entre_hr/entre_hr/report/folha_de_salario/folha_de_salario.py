@@ -11,9 +11,10 @@ Every column whose values are all zero for the month is dropped, so the sheet on
 shows what this payroll actually used.
 
 Salário Base is the contract base (SSA effective on the slip's end date); Venc. Mensal
-is the slip's base earning row, which HRMS pro-rates by payment days — so on every
-row Salário Base × Dias Trab. ÷ Dias do Mês = Venc. Mensal (Dias do Mês / Dias Trab.
-are the slip's own total_working_days / payment_days). Below the table, the Resumo dos Encargos:
+is the slip's base earning row, which HRMS pro-rates by payment days. Dias do Mês is
+the calendar length of the slip's month (28-31); Dias Trab. is the slip's payment_days.
+HRMS may count payment days against working days, not calendar days, so Salário Base ×
+Dias Trab. ÷ Dias do Mês is not guaranteed to equal Venc. Mensal. Below the table, the Resumo dos Encargos:
 INSS trabalhador, INSS empresa (employer rate from Settings, charged only on slips
 that carry INSS — an INSS-exempt employee costs no employer share either), Total INSS,
 Total IRPS, Total Encargos (INSS + IRPS, i.e. what is remitted) and Total Custos
@@ -25,7 +26,7 @@ the hidden `_` keys of the final (is_total) row; the on-screen grid ignores them
 
 import frappe
 from frappe import _
-from frappe.utils import cint, flt, getdate
+from frappe.utils import cint, flt, get_last_day, getdate
 
 from entre_hr.payroll.statutory import TAXA_INSS_EMPREGADOR, TAXA_INSS_TRABALHADOR
 from entre_hr.salario import base_para_data
@@ -80,7 +81,7 @@ def _slips(company, inicio, fim):
 			"start_date": ["between", [inicio, fim]],
 		},
 		fields=["name", "employee", "employee_name", "posting_date", "gross_pay",
-				"total_deduction", "net_pay", "end_date", "total_working_days",
+				"total_deduction", "net_pay", "end_date",
 				"payment_days", "custom_faltas_liquidas"],
 		order_by="employee_name asc, start_date asc",
 	)
@@ -144,7 +145,7 @@ def _linha(n, slip, det, horas, papeis, taxa_emp):
 		"funcionario": slip.employee,
 		"nome": slip.employee_name,
 		"base": base_para_data(slip.employee, slip.end_date),
-		"dias_mes": flt(slip.total_working_days),
+		"dias_mes": get_last_day(slip.end_date).day,
 		"dias": flt(slip.payment_days),
 		"venc_mensal": valor("earnings", papeis.base),
 		"he50_horas": flt(horas.get("horas_50")),
@@ -208,7 +209,7 @@ def _layout(linhas, detalhes, papeis, settings):
 
 	candidatos = [
 		("base", _("Salário Base"), None, "Currency"),
-		("dias_mes", _("Dias do Mês"), None, "Float"),
+		("dias_mes", _("Dias do Mês"), None, "Int"),
 		("dias", _("Dias Trab."), None, "Float"),
 		("venc_mensal", _("Venc. Mensal"), None, "Currency"),
 		*[(c, extras[c][1], None, "Currency") for c in outras_rem],

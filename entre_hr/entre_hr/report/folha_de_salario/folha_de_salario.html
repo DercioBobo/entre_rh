@@ -25,8 +25,8 @@
 	.folha-tab td.nome { white-space: nowrap; }
 	.folha-tab tr.total td { font-weight: bold; border-top: 2px solid #000; }
 	.folha-tab .destaque { font-weight: bold; }
-	.folha-resumo { border-collapse: collapse; margin-top: 14px; }
-	.folha-resumo > tbody > tr > td { vertical-align: top; padding: 0 36px 0 0 !important; border: none; }
+	.folha-resumo { border-collapse: collapse; margin-top: 14px; width: 100%; }
+	.folha-resumo > tbody > tr > td { vertical-align: top; padding: 0 !important; border: none; }
 	.folha-enc { border-collapse: collapse; }
 	.folha-enc td { padding: 1px 4px !important; font-size: 7pt; border: none; white-space: nowrap; }
 	.folha-enc td.v { text-align: right; padding-left: 16px !important; }
@@ -122,7 +122,7 @@
 				</table>
 			</td>
 			<td>
-				<table class="folha-enc">
+				<table class="folha-enc" style="float: right;">
 					<tr><td colspan="2"><b><u>{%= __("Custo Total da Empresa") %}</u></b></td></tr>
 					<tr>
 						<td>{%= __("Total Remunerações") %}</td>
