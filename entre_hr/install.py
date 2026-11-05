@@ -1,6 +1,8 @@
 import frappe
 from frappe.utils import cint, flt
 
+from entre_hr.utils import sincronizar_dias_payroll
+
 ROLES = ["Aprovador RH", "RH Manager"]
 
 
@@ -9,6 +11,7 @@ def after_install():
 	seed_padroes()
 	backfill_idades()
 	backfill_empresa()
+	sincronizar_dias_payroll()
 
 
 def after_migrate():
@@ -16,6 +19,7 @@ def after_migrate():
 	seed_padroes()
 	backfill_idades()
 	backfill_empresa()
+	sincronizar_dias_payroll()
 
 
 def backfill_idades():

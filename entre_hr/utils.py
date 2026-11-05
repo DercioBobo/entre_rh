@@ -106,6 +106,19 @@ MESES = [
 ]
 
 
+def sincronizar_dias_payroll():
+	"""Make HRMS pro-rate pay on the same day count as Settings.divisor_dias, so one
+	setting governs both the base salary and the faltas. "Dias do Mês" counts weekends
+	and holidays (joining on the 12th of a 31-day month pays 20/31); "Dias Úteis" leaves
+	them out. Payroll Settings is overwritten: Entre HR Settings is the source of truth."""
+	divisor = frappe.db.get_single_value("Entre HR Settings", "divisor_dias")
+	frappe.db.set_single_value(
+		"Payroll Settings",
+		"include_holidays_in_total_working_days",
+		0 if divisor == "Dias Úteis" else 1,
+	)
+
+
 def mes_para_numero(mes):
 	if mes not in MESES:
 		frappe.throw(_("Mês inválido: {0}").format(mes))

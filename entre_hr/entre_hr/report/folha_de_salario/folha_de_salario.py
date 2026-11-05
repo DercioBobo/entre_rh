@@ -3,18 +3,23 @@
 Fixed layout modelled on the company's paper sheet (FOLHA_DE_SALARIO.pdf), built
 from one company's submitted Salary Slips for one month:
 
-	Nº · Nome · Salário Base · Dias do Mês · Dias Trab. · Venc. Mensal · <other earnings> · HE 50% (h/valor) ·
+	Nº · Nome · Salário Mensal · Dias de Referência · Dias Remunerados ·
+	Salário Bruto Proporcional · <other earnings> · HE 50% (h/valor) ·
 	HE 100% (h/valor) · Total Remunerações · Faltas (dias/valor) · <other deductions> ·
 	IRPS · INSS · Total Deduções · Líquido
 
 Every column whose values are all zero for the month is dropped, so the sheet only
 shows what this payroll actually used.
 
-Salário Base is the contract base (SSA effective on the slip's end date); Venc. Mensal
-is the slip's base earning row, which HRMS pro-rates by payment days. Dias do Mês is
-the calendar length of the slip's month (28-31); Dias Trab. is the slip's payment_days.
-HRMS may count payment days against working days, not calendar days, so Salário Base ×
-Dias Trab. ÷ Dias do Mês is not guaranteed to equal Venc. Mensal. Below the table, the Resumo dos Encargos:
+Salário Mensal is the contract base (SSA effective on the slip's end date); Salário
+Bruto Proporcional is the slip's base earning row, which HRMS pro-rates by payment days.
+Dias de Referência is the calendar length of the slip's month (28-31); Dias Remunerados
+is the slip's payment_days. HRMS may count payment days against working days, not
+calendar days, so Salário Mensal × Dias Remunerados ÷ Dias de Referência is not
+guaranteed to equal Salário Bruto Proporcional.
+
+Total Remunerações is hidden when nobody has an earning beyond the proportional salary,
+since it would only repeat that column. The total is still used by the encargos. Below the table, the Resumo dos Encargos:
 INSS trabalhador, INSS empresa (employer rate from Settings, charged only on slips
 that carry INSS — an INSS-exempt employee costs no employer share either), Total INSS,
 Total IRPS, Total Encargos (INSS + IRPS, i.e. what is remitted) and Total Custos
@@ -208,10 +213,10 @@ def _layout(linhas, detalhes, papeis, settings):
 						key=lambda c: extras[c][1])
 
 	candidatos = [
-		("base", _("Salário Base"), None, "Currency"),
-		("dias_mes", _("Dias do Mês"), None, "Int"),
-		("dias", _("Dias Trab."), None, "Float"),
-		("venc_mensal", _("Venc. Mensal"), None, "Currency"),
+		("base", _("Salário Mensal"), None, "Currency"),
+		("dias_mes", _("Dias de Referência"), None, "Int"),
+		("dias", _("Dias Remunerados"), None, "Float"),
+		("venc_mensal", _("Salário Bruto Proporcional"), None, "Currency"),
 		*[(c, extras[c][1], None, "Currency") for c in outras_rem],
 		("he50_horas", _("Horas"), _("Horas Extras 50%"), "Float"),
 		("he50_valor", _("Valor"), _("Horas Extras 50%"), "Currency"),
@@ -226,8 +231,16 @@ def _layout(linhas, detalhes, papeis, settings):
 		("total_deducoes", _("Total Deduções"), None, "Currency"),
 		("liquido", _("Líquido a Receber"), None, "Currency"),
 	]
-	sempre = {"total_remuneracoes", "total_deducoes", "liquido"}
-	vivos = {f for f, *_r in candidatos if any(flt(linha.get(f)) for linha in linhas)}
+	sempre = {"total_deducoes", "liquido"}
+	if any(
+		abs(flt(linha["total_remuneracoes"]) - flt(linha["venc_mensal"])) >= 0.005
+		for linha in linhas
+	):
+		sempre.add("total_remuneracoes")
+	vivos = {
+		f for f, *_r in candidatos
+		if f != "total_remuneracoes" and any(flt(linha.get(f)) for linha in linhas)
+	}
 	# A group shown by half reads oddly (hours without value or vice-versa): keep both.
 	grupos = {grupo for f, _l, grupo, _t in candidatos if grupo and f in vivos}
 	return [
@@ -247,7 +260,7 @@ def _coluna(spec):
 		"label": label,
 		"fieldname": spec["fieldname"],
 		"fieldtype": spec["tipo"],
-		"width": 120,
+		"width": max(120, len(label) * 8),
 	}
 
 
@@ -262,6 +275,7 @@ def _total(linhas, layout):
 		if spec["fieldname"] in ("dias_mes", "dias"):
 			continue  # per-person day counts don't add up to anything meaningful
 		total[spec["fieldname"]] = sum(flt(linha.get(spec["fieldname"])) for linha in linhas)
+	total["total_remuneracoes"] = sum(flt(linha["total_remuneracoes"]) for linha in linhas)
 	total["_inss_empresa"] = sum(flt(linha["_inss_empresa"]) for linha in linhas)
 	return total
 
