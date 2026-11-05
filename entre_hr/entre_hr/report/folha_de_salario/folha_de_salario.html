@@ -4,10 +4,13 @@
 	var linhas = data.filter(function(r) { return !r.is_total; });
 	var cols = (t && t._layout) || [];
 	var enc = (t && t._encargos) || {};
+	// Set by folha_de_salario.js from the print dialog: a letter head already
+	// carries the company identity, so the header below is skipped only then.
+	var timbrado = !!(typeof report !== "undefined" && report && report.folha_com_timbrado);
 	var fmt = function(v, tipo) {
 		v = flt(v);
 		if (!v) { return "-"; }
-		if (tipo === "Int") { return String(v); }
+		if (tipo === "Int" || (tipo === "Float" && v % 1 === 0)) { return String(v); }
 		return format_number(v, null, 2);
 	};
 %}
@@ -21,21 +24,26 @@
 	.folha-tab td.nome { white-space: nowrap; }
 	.folha-tab tr.total td { font-weight: bold; border-top: 2px solid #000; }
 	.folha-tab .destaque { font-weight: bold; }
-	.folha-enc { border-collapse: collapse; margin-top: 18px; width: 55%; }
-	.folha-enc td { padding: 2px 6px !important; font-size: 7.5pt; border: none; }
-	.folha-enc td.v { text-align: right; white-space: nowrap; width: 25%; }
+	.folha-resumo { border-collapse: collapse; margin-top: 14px; }
+	.folha-resumo > tbody > tr > td { vertical-align: top; padding: 0 36px 0 0 !important; border: none; }
+	.folha-enc { border-collapse: collapse; }
+	.folha-enc td { padding: 1px 4px !important; font-size: 7pt; border: none; white-space: nowrap; }
+	.folha-enc td.v { text-align: right; padding-left: 16px !important; }
+	.folha-enc td.p { text-align: right; padding-left: 12px !important; }
 	.folha-enc tr.sub td { font-weight: bold; border-top: 1px solid #000; }
 	.folha-enc tr.fim td { font-weight: bold; border-top: 2px solid #000; }
 	.folha-assin { margin-top: 40px; text-align: center; font-size: 7.5pt; }
 </style>
 
 <div class="folha">
+	{% if (!timbrado) { %}
 	<table class="folha-cab">
 		<tr><td><b>{%= t ? t._empresa : "" %}</b></td></tr>
 		{% if (t && t._endereco) { %}<tr><td>{%= __("Endereço") %}: {%= t._endereco %}</td></tr>{% } %}
 		{% if (t && t._cidade) { %}<tr><td>{%= t._cidade %}</td></tr>{% } %}
 		{% if (t && t._nuit) { %}<tr><td>NUIT: {%= t._nuit %}</td></tr>{% } %}
 	</table>
+	{% } %}
 
 	<h5 style="margin: 10px 0 0 0;">
 		<b>{%= __("FOLHA DE SALÁRIO") %}</b> &nbsp;&middot;&nbsp; {%= t ? t._periodo : "" %}
@@ -85,21 +93,21 @@
 		</tbody>
 	</table>
 
-	<table style="width: 100%;">
+	<table class="folha-resumo">
 		<tr>
-			<td style="vertical-align: top; width: 60%;">
-				<table class="folha-enc" style="width: 100%;">
+			<td>
+				<table class="folha-enc">
 					<tr><td colspan="3"><b><u>{%= __("Resumo dos Encargos") %}</u></b></td></tr>
 					<tr>
-						<td>{%= __("INSS - Trabalhador") %}</td><td>{%= enc.taxa_trab %}%</td>
+						<td>{%= __("INSS - Trabalhador") %}</td><td class="p">{%= enc.taxa_trab %}%</td>
 						<td class="v">{%= fmt(enc.inss_trab) %}</td>
 					</tr>
 					<tr>
-						<td>{%= __("INSS - Empresa") %}</td><td>{%= enc.taxa_emp %}%</td>
+						<td>{%= __("INSS - Empresa") %}</td><td class="p">{%= enc.taxa_emp %}%</td>
 						<td class="v">{%= fmt(enc.inss_emp) %}</td>
 					</tr>
 					<tr class="sub">
-						<td>{%= __("Total INSS") %}</td><td>{%= enc.taxa_total %}%</td>
+						<td>{%= __("Total INSS") %}</td><td class="p">{%= enc.taxa_total %}%</td>
 						<td class="v">{%= fmt(enc.inss_total) %}</td>
 					</tr>
 					<tr>
@@ -112,8 +120,8 @@
 					</tr>
 				</table>
 			</td>
-			<td style="vertical-align: top; width: 40%;">
-				<table class="folha-enc" style="width: 100%;">
+			<td>
+				<table class="folha-enc">
 					<tr><td colspan="2"><b><u>{%= __("Custo Total da Empresa") %}</u></b></td></tr>
 					<tr>
 						<td>{%= __("Total Remunerações") %}</td>
