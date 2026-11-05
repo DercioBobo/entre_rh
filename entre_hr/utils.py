@@ -106,6 +106,24 @@ MESES = [
 ]
 
 
+def morada_da_empresa(company):
+	"""The company's primary (or any) Address, as street line(s) + city."""
+	from frappe.contacts.doctype.address.address import get_company_address
+
+	nome = (get_company_address(company) or {}).get("company_address")
+	if not nome:
+		return {}
+	a = frappe.db.get_value(
+		"Address", nome, ["address_line1", "address_line2", "city"], as_dict=True
+	)
+	if not a:
+		return {}
+	return {
+		"endereco": ", ".join(p for p in (a.address_line1, a.address_line2) if p),
+		"cidade": a.city,
+	}
+
+
 def sincronizar_dias_payroll():
 	"""Make HRMS pro-rate pay on the same day count as Settings.divisor_dias, so one
 	setting governs both the base salary and the faltas. "Dias do Mês" counts weekends

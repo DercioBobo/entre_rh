@@ -36,7 +36,7 @@ from frappe.utils import cint, flt, get_last_day, getdate
 from entre_hr.payroll.statutory import TAXA_INSS_EMPREGADOR, TAXA_INSS_TRABALHADOR
 from entre_hr.salario import base_para_data
 from entre_hr.setup_empresa import COMPONENTE_BASE
-from entre_hr.utils import MESES, mes_ano_para_periodo
+from entre_hr.utils import MESES, mes_ano_para_periodo, morada_da_empresa
 
 
 def execute(filters=None):
@@ -282,7 +282,7 @@ def _total(linhas, layout):
 
 def _meta(filters, slips, layout, total, settings, taxa_emp):
 	empresa = frappe.get_cached_doc("Company", filters.company)
-	morada = _morada(filters.company)
+	morada = morada_da_empresa(filters.company)
 	taxa_trab = flt(settings.inss_taxa_trabalhador) or TAXA_INSS_TRABALHADOR
 
 	inss_trab = flt(total.get("inss"))
@@ -311,24 +311,6 @@ def _meta(filters, slips, layout, total, settings, taxa_emp):
 			"total_encargos": inss_trab + inss_emp + irps,
 			"total_custos": flt(total.get("total_remuneracoes")) + inss_emp,
 		},
-	}
-
-
-def _morada(company):
-	"""The company's primary (or any) Address, as street line(s) + city."""
-	from frappe.contacts.doctype.address.address import get_company_address
-
-	nome = (get_company_address(company) or {}).get("company_address")
-	if not nome:
-		return {}
-	a = frappe.db.get_value(
-		"Address", nome, ["address_line1", "address_line2", "city"], as_dict=True
-	)
-	if not a:
-		return {}
-	return {
-		"endereco": ", ".join(p for p in (a.address_line1, a.address_line2) if p),
-		"cidade": a.city,
 	}
 
 
