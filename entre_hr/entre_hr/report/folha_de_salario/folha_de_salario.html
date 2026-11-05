@@ -4,8 +4,9 @@
 	var linhas = data.filter(function(r) { return !r.is_total; });
 	var cols = (t && t._layout) || [];
 	var enc = (t && t._encargos) || {};
-	// Set by folha_de_salario.js from the print dialog: a letter head already
-	// carries the company identity, so the header below is skipped only then.
+	/* Set by folha_de_salario.js from the print dialog: a letter head already
+	   carries the company identity, so the header below is skipped only then.
+	   (No line comments here: microtemplate joins the template onto one line.) */
 	var timbrado = !!(typeof report !== "undefined" && report && report.folha_com_timbrado);
 	var fmt = function(v, tipo) {
 		v = flt(v);
