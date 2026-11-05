@@ -1,0 +1,140 @@
+{%
+	var t = null;
+	for (var k = 0; k < data.length; k++) { if (data[k].is_total) { t = data[k]; } }
+	var linhas = data.filter(function(r) { return !r.is_total; });
+	var cols = (t && t._layout) || [];
+	var enc = (t && t._encargos) || {};
+	var fmt = function(v, tipo) {
+		v = flt(v);
+		if (!v) { return "-"; }
+		if (tipo === "Int") { return String(v); }
+		return format_number(v, null, 2);
+	};
+%}
+<style>
+	.folha { font-size: 7pt; }
+	.folha-cab td { padding: 0 !important; border: none !important; font-size: 7.5pt; }
+	.folha-tab { width: 100%; border-collapse: collapse; margin-top: 8px; }
+	.folha-tab th, .folha-tab td { border: 1px solid #000; padding: 2px 3px !important; font-size: 6.5pt; }
+	.folha-tab th { text-align: center; vertical-align: middle; font-weight: bold; }
+	.folha-tab td.v { text-align: right; white-space: nowrap; }
+	.folha-tab td.nome { white-space: nowrap; }
+	.folha-tab tr.total td { font-weight: bold; border-top: 2px solid #000; }
+	.folha-tab .destaque { font-weight: bold; }
+	.folha-enc { border-collapse: collapse; margin-top: 18px; width: 55%; }
+	.folha-enc td { padding: 2px 6px !important; font-size: 7.5pt; border: none; }
+	.folha-enc td.v { text-align: right; white-space: nowrap; width: 25%; }
+	.folha-enc tr.sub td { font-weight: bold; border-top: 1px solid #000; }
+	.folha-enc tr.fim td { font-weight: bold; border-top: 2px solid #000; }
+	.folha-assin { margin-top: 40px; text-align: center; font-size: 7.5pt; }
+</style>
+
+<div class="folha">
+	<table class="folha-cab">
+		<tr><td><b>{%= t ? t._empresa : "" %}</b></td></tr>
+		{% if (t && t._endereco) { %}<tr><td>{%= __("Endereço") %}: {%= t._endereco %}</td></tr>{% } %}
+		{% if (t && t._cidade) { %}<tr><td>{%= t._cidade %}</td></tr>{% } %}
+		{% if (t && t._nuit) { %}<tr><td>NUIT: {%= t._nuit %}</td></tr>{% } %}
+	</table>
+
+	<h5 style="margin: 10px 0 0 0;">
+		<b>{%= __("FOLHA DE SALÁRIO") %}</b> &nbsp;&middot;&nbsp; {%= t ? t._periodo : "" %}
+	</h5>
+
+	<table class="folha-tab">
+		<thead>
+			<tr>
+				<th rowspan="2">{%= __("Nº") %}</th>
+				<th rowspan="2">{%= __("Nome do Trabalhador") %}</th>
+				{% for (var i = 0; i < cols.length; i++) {
+					var c = cols[i];
+					if (!c.grupo) { %}
+				<th rowspan="2">{%= c.label %}</th>
+				{%	} else if (i === 0 || cols[i - 1].grupo !== c.grupo) {
+						var span = 0;
+						for (var j = i; j < cols.length && cols[j].grupo === c.grupo; j++) { span++; } %}
+				<th colspan="{%= span %}">{%= c.grupo %}</th>
+				{%	}
+				} %}
+			</tr>
+			<tr>
+				{% for (var i = 0; i < cols.length; i++) { if (cols[i].grupo) { %}
+				<th>{%= cols[i].label %}</th>
+				{% } } %}
+			</tr>
+		</thead>
+		<tbody>
+			{% for (var r = 0; r < linhas.length; r++) { var l = linhas[r]; %}
+			<tr>
+				<td class="v">{%= l.n %}</td>
+				<td class="nome">{%= l.nome %}</td>
+				{% for (var i = 0; i < cols.length; i++) { var c = cols[i]; %}
+				<td class="v{%= c.fieldname === 'total_remuneracoes' || c.fieldname === 'liquido' ? ' destaque' : '' %}">{%= fmt(l[c.fieldname], c.tipo) %}</td>
+				{% } %}
+			</tr>
+			{% } %}
+			{% if (t) { %}
+			<tr class="total">
+				<td></td>
+				<td>{%= __("Total") %}</td>
+				{% for (var i = 0; i < cols.length; i++) { var c = cols[i]; %}
+				<td class="v">{%= fmt(t[c.fieldname], c.tipo) %}</td>
+				{% } %}
+			</tr>
+			{% } %}
+		</tbody>
+	</table>
+
+	<table style="width: 100%;">
+		<tr>
+			<td style="vertical-align: top; width: 60%;">
+				<table class="folha-enc" style="width: 100%;">
+					<tr><td colspan="3"><b><u>{%= __("Resumo dos Encargos") %}</u></b></td></tr>
+					<tr>
+						<td>{%= __("INSS - Trabalhador") %}</td><td>{%= enc.taxa_trab %}%</td>
+						<td class="v">{%= fmt(enc.inss_trab) %}</td>
+					</tr>
+					<tr>
+						<td>{%= __("INSS - Empresa") %}</td><td>{%= enc.taxa_emp %}%</td>
+						<td class="v">{%= fmt(enc.inss_emp) %}</td>
+					</tr>
+					<tr class="sub">
+						<td>{%= __("Total INSS") %}</td><td>{%= enc.taxa_total %}%</td>
+						<td class="v">{%= fmt(enc.inss_total) %}</td>
+					</tr>
+					<tr>
+						<td>{%= __("Total IRPS") %}</td><td></td>
+						<td class="v">{%= fmt(enc.irps) %}</td>
+					</tr>
+					<tr class="fim">
+						<td>{%= __("Total Encargos (INSS + IRPS)") %}</td><td></td>
+						<td class="v">{%= fmt(enc.total_encargos) %}</td>
+					</tr>
+				</table>
+			</td>
+			<td style="vertical-align: top; width: 40%;">
+				<table class="folha-enc" style="width: 100%;">
+					<tr><td colspan="2"><b><u>{%= __("Custo Total da Empresa") %}</u></b></td></tr>
+					<tr>
+						<td>{%= __("Total Remunerações") %}</td>
+						<td class="v">{%= fmt(t && t.total_remuneracoes) %}</td>
+					</tr>
+					<tr>
+						<td>{%= __("INSS - Empresa") %}</td>
+						<td class="v">{%= fmt(enc.inss_emp) %}</td>
+					</tr>
+					<tr class="fim">
+						<td>{%= __("Total Custos") %}</td>
+						<td class="v">{%= fmt(enc.total_custos) %}</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+
+	<div class="folha-assin">
+		<div>{%= t ? t._local_data : "" %}</div>
+		<div style="margin-top: 40px;">____________________________________________</div>
+		<div>{%= __("(A Administração)") %}</div>
+	</div>
+</div>
