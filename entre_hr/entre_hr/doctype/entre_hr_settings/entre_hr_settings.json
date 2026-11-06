@@ -33,6 +33,9 @@
   "componente_inss",
   "inss_taxa_trabalhador",
   "inss_taxa_empregador",
+  "seguro_trabalho_section",
+  "activo_seguro_trabalho",
+  "seguro_trabalho_taxa",
   "irps_section",
   "activo_irps",
   "componente_irps",
@@ -237,6 +240,27 @@
   },
   {
    "collapsible": 1,
+   "fieldname": "seguro_trabalho_section",
+   "fieldtype": "Section Break",
+   "label": "Seguro de Trabalho"
+  },
+  {
+   "default": "0",
+   "fieldname": "activo_seguro_trabalho",
+   "fieldtype": "Check",
+   "label": "Seguro de Trabalho Activo",
+   "description": "Encargo da empresa: não é descontado ao trabalhador nem aparece no recibo. Aparece no Resumo dos Encargos da Folha de Salário e entra no Total Custos."
+  },
+  {
+   "default": "2",
+   "depends_on": "activo_seguro_trabalho",
+   "fieldname": "seguro_trabalho_taxa",
+   "fieldtype": "Percent",
+   "label": "Taxa do Seguro de Trabalho (%)",
+   "description": "Percentagem sobre o Salário Mensal de cada funcionário. Padrão: 2%."
+  },
+  {
+   "collapsible": 1,
    "fieldname": "irps_section",
    "fieldtype": "Section Break",
    "label": "IRPS"
@@ -326,7 +350,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-11-05 12:00:00.000000",
+ "modified": "2026-11-06 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Entre HR",
  "name": "Entre HR Settings",

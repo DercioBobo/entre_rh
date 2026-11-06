@@ -115,8 +115,14 @@
 						<td>{%= __("Total IRPS") %}</td><td></td>
 						<td class="v">{%= fmt(enc.irps) %}</td>
 					</tr>
+					{% if (enc.seguro) { %}
+					<tr>
+						<td>{%= __("Seguro de Trabalho") %}</td><td class="p">{%= enc.taxa_seguro %}%</td>
+						<td class="v">{%= fmt(enc.seguro) %}</td>
+					</tr>
+					{% } %}
 					<tr class="fim">
-						<td>{%= __("Total Encargos (INSS + IRPS)") %}</td><td></td>
+						<td>{%= enc.seguro ? __("Total Encargos (INSS + IRPS + Seguro)") : __("Total Encargos (INSS + IRPS)") %}</td><td></td>
 						<td class="v">{%= fmt(enc.total_encargos) %}</td>
 					</tr>
 				</table>
@@ -132,6 +138,12 @@
 						<td>{%= __("INSS - Empresa") %}</td>
 						<td class="v">{%= fmt(enc.inss_emp) %}</td>
 					</tr>
+					{% if (enc.seguro) { %}
+					<tr>
+						<td>{%= __("Seguro de Trabalho") %}</td>
+						<td class="v">{%= fmt(enc.seguro) %}</td>
+					</tr>
+					{% } %}
 					<tr class="fim">
 						<td>{%= __("Total Custos") %}</td>
 						<td class="v">{%= fmt(enc.total_custos) %}</td>

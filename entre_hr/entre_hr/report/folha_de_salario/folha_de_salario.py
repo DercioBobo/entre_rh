@@ -4,12 +4,13 @@ Fixed layout modelled on the company's paper sheet (FOLHA_DE_SALARIO.pdf), built
 from one company's submitted Salary Slips for one month:
 
 	Nº · Nome · Salário Mensal · Dias de Referência · Dias Remunerados ·
-	Salário Bruto Proporcional · <other earnings> · HE 50% (h/valor) ·
-	HE 100% (h/valor) · Total Remunerações · Faltas (dias/valor) · <other deductions> ·
+	Salário Bruto Proporcional · Total Remunerações · <other earnings> · HE 50% (h/valor) ·
+	HE 100% (h/valor) · Faltas (dias/valor) · <other deductions> ·
 	IRPS · INSS · Total Deduções · Líquido
 
 Every column whose values are all zero for the month is dropped, so the sheet only
-shows what this payroll actually used.
+shows what this payroll actually used. Total Remunerações, Total Deduções and Líquido
+always stay.
 
 Salário Mensal is the contract base (SSA effective on the slip's end date); Salário
 Bruto Proporcional is the slip's base earning row, which HRMS pro-rates by payment days.
@@ -18,12 +19,12 @@ is the slip's payment_days. HRMS may count payment days against working days, no
 calendar days, so Salário Mensal × Dias Remunerados ÷ Dias de Referência is not
 guaranteed to equal Salário Bruto Proporcional.
 
-Total Remunerações is hidden when nobody has an earning beyond the proportional salary,
-since it would only repeat that column. The total is still used by the encargos. Below the table, the Resumo dos Encargos:
+Below the table, the Resumo dos Encargos:
 INSS trabalhador, INSS empresa (employer rate from Settings, charged only on slips
 that carry INSS — an INSS-exempt employee costs no employer share either), Total INSS,
-Total IRPS, Total Encargos (INSS + IRPS, i.e. what is remitted) and Total Custos
-(gross + employer INSS).
+Total IRPS, Seguro de Trabalho (when active in Settings: a % of Salário Mensal paid by
+the company, never deducted from the worker), Total Encargos (INSS + IRPS + Seguro) and
+Total Custos (gross + employer INSS + Seguro).
 
 The print template (folha_de_salario.html) reads the header, layout and encargos from
 the hidden `_` keys of the final (is_total) row; the on-screen grid ignores them.
@@ -33,7 +34,11 @@ import frappe
 from frappe import _
 from frappe.utils import cint, flt, get_last_day, getdate
 
-from entre_hr.payroll.statutory import TAXA_INSS_EMPREGADOR, TAXA_INSS_TRABALHADOR
+from entre_hr.payroll.statutory import (
+	TAXA_INSS_EMPREGADOR,
+	TAXA_INSS_TRABALHADOR,
+	TAXA_SEGURO_TRABALHO,
+)
 from entre_hr.salario import base_para_data
 from entre_hr.setup_empresa import COMPONENTE_BASE
 from entre_hr.utils import MESES, mes_ano_para_periodo, morada_da_empresa
@@ -54,14 +59,16 @@ def execute(filters=None):
 	detalhes = _detalhes([s.name for s in slips])
 	horas = _horas_extras(slips, filters.mes, filters.ano)
 	taxa_emp = flt(settings.get("inss_taxa_empregador")) or TAXA_INSS_EMPREGADOR
+	taxa_seguro = _taxa_seguro(settings)
 
 	linhas = [
-		_linha(i, slip, detalhes.get(slip.name, {}), horas.get(slip.employee, {}), papeis, taxa_emp)
+		_linha(i, slip, detalhes.get(slip.name, {}), horas.get(slip.employee, {}), papeis, taxa_emp,
+			   taxa_seguro)
 		for i, slip in enumerate(slips, start=1)
 	]
 	layout = _layout(linhas, detalhes, papeis, settings)
 	total = _total(linhas, layout)
-	total.update(_meta(filters, slips, layout, total, settings, taxa_emp))
+	total.update(_meta(filters, slips, layout, total, settings, taxa_emp, taxa_seguro))
 
 	colunas = [
 		{"label": _("Nº"), "fieldname": "n", "fieldtype": "Int", "width": 50},
@@ -90,6 +97,13 @@ def _slips(company, inicio, fim):
 				"payment_days", "custom_faltas_liquidas"],
 		order_by="employee_name asc, start_date asc",
 	)
+
+
+def _taxa_seguro(settings):
+	"""Seguro de Trabalho rate, or 0 while it is switched off in Settings."""
+	if not cint(settings.get("activo_seguro_trabalho")):
+		return 0.0
+	return flt(settings.get("seguro_trabalho_taxa")) or TAXA_SEGURO_TRABALHO
 
 
 def _papeis(settings):
@@ -141,7 +155,7 @@ def _tributavel(componente):
 	return cint(frappe.get_cached_value("Salary Component", componente, "is_tax_applicable"))
 
 
-def _linha(n, slip, det, horas, papeis, taxa_emp):
+def _linha(n, slip, det, horas, papeis, taxa_emp, taxa_seguro):
 	def valor(parentfield, componente):
 		return flt(det.get((parentfield, componente))) if componente else 0.0
 
@@ -184,6 +198,8 @@ def _linha(n, slip, det, horas, papeis, taxa_emp):
 		linha["_inss_empresa"] = flt(base_tributavel * taxa_emp / 100, 2)
 	else:
 		linha["_inss_empresa"] = 0.0
+
+	linha["_seguro_trabalho"] = flt(flt(linha["base"]) * taxa_seguro / 100, 2)
 	return linha
 
 
@@ -217,12 +233,12 @@ def _layout(linhas, detalhes, papeis, settings):
 		("dias_mes", _("Dias de Referência"), None, "Int"),
 		("dias", _("Dias Remunerados"), None, "Float"),
 		("venc_mensal", _("Salário Bruto Proporcional"), None, "Currency"),
+		("total_remuneracoes", _("Total Remunerações"), None, "Currency"),
 		*[(c, extras[c][1], None, "Currency") for c in outras_rem],
 		("he50_horas", _("Horas"), _("Horas Extras 50%"), "Float"),
 		("he50_valor", _("Valor"), _("Horas Extras 50%"), "Currency"),
 		("he100_horas", _("Horas"), _("Horas Extras 100%"), "Float"),
 		("he100_valor", _("Valor"), _("Horas Extras 100%"), "Currency"),
-		("total_remuneracoes", _("Total Remunerações"), None, "Currency"),
 		("faltas_dias", _("Dias"), _("Faltas"), "Int"),
 		("faltas_valor", _("Valor"), _("Faltas"), "Currency"),
 		*[(c, extras[c][1], None, "Currency") for c in outras_ded],
@@ -231,16 +247,8 @@ def _layout(linhas, detalhes, papeis, settings):
 		("total_deducoes", _("Total Deduções"), None, "Currency"),
 		("liquido", _("Líquido a Receber"), None, "Currency"),
 	]
-	sempre = {"total_deducoes", "liquido"}
-	if any(
-		abs(flt(linha["total_remuneracoes"]) - flt(linha["venc_mensal"])) >= 0.005
-		for linha in linhas
-	):
-		sempre.add("total_remuneracoes")
-	vivos = {
-		f for f, *_r in candidatos
-		if f != "total_remuneracoes" and any(flt(linha.get(f)) for linha in linhas)
-	}
+	sempre = {"total_remuneracoes", "total_deducoes", "liquido"}
+	vivos = {f for f, *_r in candidatos if any(flt(linha.get(f)) for linha in linhas)}
 	# A group shown by half reads oddly (hours without value or vice-versa): keep both.
 	grupos = {grupo for f, _l, grupo, _t in candidatos if grupo and f in vivos}
 	return [
@@ -275,12 +283,12 @@ def _total(linhas, layout):
 		if spec["fieldname"] in ("dias_mes", "dias"):
 			continue  # per-person day counts don't add up to anything meaningful
 		total[spec["fieldname"]] = sum(flt(linha.get(spec["fieldname"])) for linha in linhas)
-	total["total_remuneracoes"] = sum(flt(linha["total_remuneracoes"]) for linha in linhas)
 	total["_inss_empresa"] = sum(flt(linha["_inss_empresa"]) for linha in linhas)
+	total["_seguro_trabalho"] = sum(flt(linha["_seguro_trabalho"]) for linha in linhas)
 	return total
 
 
-def _meta(filters, slips, layout, total, settings, taxa_emp):
+def _meta(filters, slips, layout, total, settings, taxa_emp, taxa_seguro):
 	empresa = frappe.get_cached_doc("Company", filters.company)
 	morada = morada_da_empresa(filters.company)
 	taxa_trab = flt(settings.inss_taxa_trabalhador) or TAXA_INSS_TRABALHADOR
@@ -288,6 +296,7 @@ def _meta(filters, slips, layout, total, settings, taxa_emp):
 	inss_trab = flt(total.get("inss"))
 	inss_emp = flt(total["_inss_empresa"])
 	irps = flt(total.get("irps"))
+	seguro = flt(total["_seguro_trabalho"])
 	data = max(getdate(s.posting_date) for s in slips)
 	cidade = morada.get("cidade")
 	return {
@@ -308,14 +317,20 @@ def _meta(filters, slips, layout, total, settings, taxa_emp):
 			"inss_emp": inss_emp,
 			"inss_total": inss_trab + inss_emp,
 			"irps": irps,
-			"total_encargos": inss_trab + inss_emp + irps,
-			"total_custos": flt(total.get("total_remuneracoes")) + inss_emp,
+			"taxa_seguro": _pct(taxa_seguro),
+			"seguro": seguro,
+			"total_encargos": inss_trab + inss_emp + irps + seguro,
+			"total_custos": flt(total.get("total_remuneracoes")) + inss_emp + seguro,
 		},
 	}
 
 
 def _resumo(total):
 	e = total["_encargos"]
+	seguro = [
+		{"label": _("Seguro de Trabalho ({0}%)").format(e["taxa_seguro"]), "value": e["seguro"],
+		 "datatype": "Currency"},
+	] if e["seguro"] else []
 	return [
 		{"label": _("Total Remunerações"), "value": total.get("total_remuneracoes"),
 		 "datatype": "Currency"},
@@ -323,5 +338,6 @@ def _resumo(total):
 		{"label": _("Total INSS ({0}%)").format(e["taxa_total"]), "value": e["inss_total"],
 		 "datatype": "Currency"},
 		{"label": _("Total IRPS"), "value": e["irps"], "datatype": "Currency"},
+		*seguro,
 		{"label": _("Total Custos"), "value": e["total_custos"], "datatype": "Currency"},
 	]

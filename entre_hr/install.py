@@ -94,6 +94,7 @@ def seed_padroes():
 		TABELA_IRPS_OFICIAL,
 		TAXA_INSS_EMPREGADOR,
 		TAXA_INSS_TRABALHADOR,
+		TAXA_SEGURO_TRABALHO,
 	)
 	from entre_hr.utils import ensure_salary_component
 
@@ -145,6 +146,11 @@ def seed_padroes():
 
 	if flt(settings.get("inss_taxa_empregador")) <= 0:
 		settings.inss_taxa_empregador = TAXA_INSS_EMPREGADOR
+		mudou = True
+
+	# Only the rate is seeded: Seguro de Trabalho stays off until the operator activates it.
+	if flt(settings.get("seguro_trabalho_taxa")) <= 0:
+		settings.seguro_trabalho_taxa = TAXA_SEGURO_TRABALHO
 		mudou = True
 
 	if not settings.get("irps_tabela"):
